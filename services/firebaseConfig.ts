@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, Firestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import type { Auth } from "firebase/auth";
 
 // Your web app's Firebase configuration
 // These values come from your .env file
@@ -13,8 +14,23 @@ const firebaseConfig = {
   appId: process.env.FIREBASE_APP_ID
 };
 
-// Initialize Firebase
-// We only initialize if keys are present to prevent crashes during build/dev if not set up yet
-const app = initializeApp(firebaseConfig);
-export const firestore = getFirestore(app);
-export const auth = getAuth(app);
+let app;
+let firestore: Firestore | undefined;
+let auth: Auth | undefined;
+
+try {
+    // Check if critical keys are present before initializing
+    if (firebaseConfig.apiKey && firebaseConfig.projectId) {
+        app = initializeApp(firebaseConfig);
+        firestore = getFirestore(app);
+        auth = getAuth(app);
+    } else {
+        console.warn("BhumiHub: Firebase API keys missing. App starting in Demo Mode (Mock Data).");
+    }
+} catch (e) {
+    console.error("BhumiHub: Firebase initialization failed. App starting in Demo Mode.", e);
+}
+
+// Export potentially undefined instances. 
+// services/db.ts handles the fallback logic.
+export { firestore, auth };
