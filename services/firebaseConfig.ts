@@ -1,7 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore, Firestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-import type { Auth } from "firebase/auth";
 
 // Your web app's Firebase configuration
 // These values come from your .env file
@@ -16,7 +15,7 @@ const firebaseConfig = {
 
 let app;
 let firestore: Firestore | undefined;
-let auth: Auth | undefined;
+let auth: ReturnType<typeof getAuth> | undefined;
 
 try {
     // Check if critical keys are present before initializing
