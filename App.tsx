@@ -34,26 +34,31 @@ const App: React.FC = () => {
   useEffect(() => {
     const initApp = async () => {
         setLoading(true);
-        // Check session
-        const sessionUser = db.getSession();
-        if (sessionUser) setUser(sessionUser);
+        try {
+            // Check session
+            const sessionUser = db.getSession();
+            if (sessionUser) setUser(sessionUser);
 
-        // Seed DB if new
-        await db.init();
+            // Seed DB if new
+            await db.init();
 
-        // Fetch Data
-        const [fetchedUsers, fetchedConfig, fetchedIdeas, fetchedCampaigns] = await Promise.all([
-            db.getUsers(),
-            db.getConfig(),
-            db.getIdeas(),
-            db.getCampaigns()
-        ]);
+            // Fetch Data
+            const [fetchedUsers, fetchedConfig, fetchedIdeas, fetchedCampaigns] = await Promise.all([
+                db.getUsers(),
+                db.getConfig(),
+                db.getIdeas(),
+                db.getCampaigns()
+            ]);
 
-        setUsers(fetchedUsers);
-        setConfig(fetchedConfig);
-        setIdeas(fetchedIdeas);
-        setCampaigns(fetchedCampaigns);
-        setLoading(false);
+            setUsers(fetchedUsers);
+            setConfig(fetchedConfig);
+            setIdeas(fetchedIdeas);
+            setCampaigns(fetchedCampaigns);
+        } catch (error) {
+            console.error("App initialization failed", error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     initApp();
