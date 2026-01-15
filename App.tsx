@@ -174,6 +174,8 @@ const App: React.FC = () => {
   }
 
   const renderContent = () => {
+    if (!user) return null; // GUARD: Ensures user is not null for TypeScript
+
     switch (activeTab) {
       case 'dashboard':
         return <Dashboard ideas={ideas} campaigns={campaigns} />;
