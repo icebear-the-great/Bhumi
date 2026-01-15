@@ -10,8 +10,7 @@ import {
   doc, 
   setDoc,
   getDoc,
-  query,
-  orderBy
+  query
 } from 'firebase/firestore';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 
@@ -45,9 +44,8 @@ export const db = {
   
   // --- INITIALIZATION ---
   init: async () => {
-    // In a real production app, we don't auto-seed on every load.
-    // However, for this transition, we check if the config exists.
-    // If not, we assume it's a fresh DB and seed defaults.
+    if (!firestore) return; // Skip if no DB connection
+
     try {
         const configRef = doc(firestore, COLLECTIONS.CONFIG, 'main');
         const configSnap = await getDoc(configRef);
@@ -60,15 +58,13 @@ export const db = {
                 channels: DEFAULT_CHANNELS
             });
             
-            // Seed Users (Profiles only - Auth must be created in Firebase Console manually for security)
+            // Seed Users (Profiles only)
             for (const user of MOCK_USERS) {
-                // We use email as ID for simplicity in this migration to map Auth to Profile
                 await setDoc(doc(firestore, COLLECTIONS.USERS, user.email), user);
             }
 
             // Seed Ideas
             for (const idea of MOCK_IDEAS) {
-                 // Remove ID so Firestore generates it, or keep it. Let's keep specific IDs for mocks.
                  const { id, ...rest } = idea;
                  await setDoc(doc(firestore, COLLECTIONS.IDEAS, id), rest);
             }
@@ -81,42 +77,44 @@ export const db = {
         }
     } catch (e) {
         console.error("Error initializing DB:", e);
-        // Fallback to allow app to run if firebase keys are missing
     }
     return true;
   },
 
   // --- USERS ---
   getUsers: async (): Promise<User[]> => {
+    if (!firestore) return MOCK_USERS;
     try {
         const snapshot = await getDocs(collection(firestore, COLLECTIONS.USERS));
         return snapshot.docs.map(d => ({ id: d.id, ...d.data() } as User));
     } catch (e) {
-        return MOCK_USERS; // Fallback
+        return MOCK_USERS; 
     }
   },
 
   addUser: async (user: User): Promise<User[]> => {
+    if (!firestore) {
+        MOCK_USERS.push(user);
+        return [...MOCK_USERS];
+    }
     await setDoc(doc(firestore, COLLECTIONS.USERS, user.email), user);
     return db.getUsers();
   },
 
   updateUserStatus: async (id: string, status: 'Active' | 'Inactive'): Promise<User[]> => {
-    // ID in our firestore setup is the email, or the doc ID
+    if (!firestore) return MOCK_USERS; // Demo mode: no persistence
     await updateDoc(doc(firestore, COLLECTIONS.USERS, id), { status });
     return db.getUsers();
   },
 
   resetUserPassword: async (id: string): Promise<User[]> => {
-    // In Firebase Auth, you can't programmatically set a specific password easily from client SDK.
-    // You would typically trigger a password reset email.
-    // For this internal tool demo, we'll just mock the success message.
     console.log("Password reset triggered for", id);
     return db.getUsers();
   },
 
   // --- IDEAS ---
   getIdeas: async (): Promise<Idea[]> => {
+    if (!firestore) return MOCK_IDEAS;
     try {
         const q = query(collection(firestore, COLLECTIONS.IDEAS));
         const snapshot = await getDocs(q);
@@ -128,24 +126,27 @@ export const db = {
   },
 
   saveIdea: async (idea: Idea): Promise<Idea> => {
+    if (!firestore) return idea; // Demo mode
     const { id, ...rest } = idea;
-    // We let Firestore generate ID if it's new, or use provided if migrating
     const docRef = await addDoc(collection(firestore, COLLECTIONS.IDEAS), rest);
     return { ...idea, id: docRef.id };
   },
 
   updateIdea: async (idea: Idea): Promise<Idea> => {
+      if (!firestore) return idea;
       const { id, ...rest } = idea;
       await updateDoc(doc(firestore, COLLECTIONS.IDEAS, id), rest);
       return idea;
   },
 
   deleteIdea: async (id: string): Promise<void> => {
+      if (!firestore) return;
       await deleteDoc(doc(firestore, COLLECTIONS.IDEAS, id));
   },
 
   // --- CAMPAIGNS ---
   getCampaigns: async (): Promise<Campaign[]> => {
+      if (!firestore) return MOCK_CAMPAIGNS;
       try {
         const snapshot = await getDocs(collection(firestore, COLLECTIONS.CAMPAIGNS));
         return snapshot.docs.map(d => {
@@ -156,12 +157,14 @@ export const db = {
   },
 
   saveCampaign: async (campaign: Campaign): Promise<Campaign> => {
+      if (!firestore) return campaign;
       const { id, ...rest } = campaign;
       const docRef = await addDoc(collection(firestore, COLLECTIONS.CAMPAIGNS), rest);
       return { ...campaign, id: docRef.id };
   },
 
   updateCampaign: async (campaign: Campaign): Promise<Campaign> => {
+      if (!firestore) return campaign;
       const { id, ...rest } = campaign;
       await updateDoc(doc(firestore, COLLECTIONS.CAMPAIGNS, id), rest);
       return campaign;
@@ -169,6 +172,7 @@ export const db = {
 
   // --- CONFIG ---
   getConfig: async (): Promise<AppConfig> => {
+    if (!firestore) return { categories: DEFAULT_CATEGORIES, roles: DEFAULT_ROLES, channels: DEFAULT_CHANNELS };
     try {
       const docRef = doc(firestore, COLLECTIONS.CONFIG, 'main');
       const snapshot = await getDoc(docRef);
@@ -182,31 +186,35 @@ export const db = {
   },
 
   saveConfig: async (config: AppConfig) => {
+    if (!firestore) return;
     await setDoc(doc(firestore, COLLECTIONS.CONFIG, 'main'), config);
   },
 
   // --- AUTH ---
   login: async (email: string, password: string): Promise<User | null> => {
+    if (!auth || !firestore) {
+        // Mock Login for Demo Mode
+        const mockUser = MOCK_USERS.find(u => u.email === email);
+        if (mockUser && password === 'welcome123') {
+             localStorage.setItem('bhumi_session', JSON.stringify(mockUser));
+             return mockUser;
+        }
+        return null;
+    }
+
     try {
-        // 1. Authenticate with Firebase Auth
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const firebaseUser = userCredential.user;
-
-        // 2. Fetch User Profile from Firestore (for Role/Name/Avatar)
-        // We assume the document ID is the email (as set in init/addUser)
         const docRef = doc(firestore, COLLECTIONS.USERS, email); 
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
             const userData = docSnap.data() as User;
             if (userData.status === 'Inactive') return null;
-            
-            // Merge Auth ID with Profile Data
             const fullUser = { ...userData, id: firebaseUser.uid };
             localStorage.setItem('bhumi_session', JSON.stringify(fullUser));
             return fullUser;
         } else {
-             // Fallback for demo users that might exist in Auth but not Firestore yet
              return {
                  id: firebaseUser.uid,
                  email: firebaseUser.email || '',
@@ -222,7 +230,7 @@ export const db = {
   },
 
   logout: async () => {
-    await signOut(auth);
+    if (auth) await signOut(auth);
     localStorage.removeItem('bhumi_session');
   },
 
