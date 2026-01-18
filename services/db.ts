@@ -1,6 +1,6 @@
 import { User, AppConfig, Idea, Campaign } from '../types';
 import { MOCK_USERS, MOCK_IDEAS, MOCK_CAMPAIGNS, DEFAULT_CATEGORIES, DEFAULT_ROLES, DEFAULT_CHANNELS } from '../constants';
-import { firestore, auth, getIsDemoMode } from './firebaseConfig';
+import { firestore, auth, getIsDemoMode, firebaseConfig } from './firebaseConfig';
 import { 
   collection, 
   getDocs, 
@@ -12,7 +12,8 @@ import {
   getDoc,
   query
 } from 'firebase/firestore';
-import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword, getAuth as getAuthFromApp } from 'firebase/auth';
+import { initializeApp, deleteApp } from 'firebase/app';
 
 const COLLECTIONS = {
   USERS: 'users',
@@ -157,7 +158,37 @@ export const db = {
         setLocal(LS_KEYS.USERS, updated);
         return updated;
     }
+
+    // 1. Create User in Firestore (Profile)
     await setDoc(doc(firestore, COLLECTIONS.USERS, user.email), sanitize(user));
+
+    // 2. Create User in Firebase Auth
+    // We must use a secondary app instance to avoid logging out the current admin user
+    if (user.password && firebaseConfig && firebaseConfig.apiKey) {
+        let secondaryApp;
+        try {
+            secondaryApp = initializeApp(firebaseConfig, "Secondary");
+            const secondaryAuth = getAuthFromApp(secondaryApp);
+            await createUserWithEmailAndPassword(secondaryAuth, user.email, user.password);
+            
+            // Clean up: Sign out secondary and delete app
+            await signOut(secondaryAuth);
+            console.log("User created in Firebase Auth successfully");
+        } catch (e: any) {
+            console.error("Failed to create user in Auth:", e);
+            if (e.code === 'auth/email-already-in-use') {
+                console.warn("User already exists in Auth, proceeding with DB update.");
+            } else {
+                // If it's a permission error or something else, we let the UI know via toast in component
+                throw e;
+            }
+        } finally {
+            if (secondaryApp) {
+                await deleteApp(secondaryApp);
+            }
+        }
+    }
+
     return db.getUsers();
   },
 
@@ -174,6 +205,8 @@ export const db = {
 
   resetUserPassword: async (id: string): Promise<User[]> => {
     console.log("Password reset triggered for", id);
+    // Note: Admin SDK is required to reset passwords programmatically without knowing the old one.
+    // In a client-only app, we typically send a password reset email via auth.sendPasswordResetEmail(email)
     return db.getUsers();
   },
 
