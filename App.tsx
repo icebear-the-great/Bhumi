@@ -169,12 +169,30 @@ const App: React.FC = () => {
     
     try {
         await db.updateIdea(updatedIdea);
-        showToast("Idea updated");
+        // Do not toast for every drag/drop update to reduce noise
+        if (updatedIdea.status !== prevIdeas.find(i => i.id === updatedIdea.id)?.status) {
+             // Only toast on significant status changes if desired, or silent
+        } else {
+             showToast("Idea updated");
+        }
     } catch (error) {
         setIdeas(prevIdeas); // Rollback
         handleError(error, "Failed to update idea");
     }
   };
+
+  const handleDeleteIdea = async (id: string) => {
+      const prevIdeas = [...ideas];
+      setIdeas(prev => prev.filter(i => i.id !== id));
+      
+      try {
+          await db.deleteIdea(id);
+          showToast("Idea deleted");
+      } catch (error) {
+          setIdeas(prevIdeas);
+          handleError(error, "Failed to delete idea");
+      }
+  }
 
   const handleSaveIdea = (ideaData: Partial<Idea>) => {
     if (editingIdea) {
@@ -277,18 +295,12 @@ const App: React.FC = () => {
       case 'dashboard':
         return <Dashboard ideas={ideas} campaigns={campaigns} />;
       case 'pipeline':
-        const wrappedSetIdeas = (action: React.SetStateAction<Idea[]>) => {
-            setIdeas(prev => {
-                const next = typeof action === 'function' ? action(prev) : action;
-                return next;
-            });
-        };
-
         return <IdeaPipeline 
             ideas={ideas} 
-            setIdeas={wrappedSetIdeas}
             onAddIdea={() => handleOpenModal()} 
             onEditIdea={handleEditIdea} 
+            onUpdateIdea={handleUpdateIdea}
+            onDeleteIdea={handleDeleteIdea}
         />;
       case 'campaigns':
         if (selectedCampaignId) {
