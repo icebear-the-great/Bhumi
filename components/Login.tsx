@@ -26,8 +26,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         if (user) {
             onLogin(user);
         } else {
-            // This block is rarely reached as firebase throws on failure, 
-            // but helpful for local mock logic fallback
             setError('Invalid email or password.');
             setLoading(false);
         }
@@ -36,7 +34,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         
         // Parse Firebase Error Codes
         const code = anyError?.code;
-        const msg = anyError?.message;
+        const msg = anyError?.message || '';
 
         if (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found') {
             setError('Incorrect email or password.');
@@ -44,10 +42,11 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             setError('Too many failed attempts. Please try again later.');
         } else if (code === 'auth/network-request-failed') {
             setError('Network error. Check your internet connection.');
-        } else if (msg && msg.includes('API key')) {
+        } else if (code === 'permission-denied' || msg.includes('Missing or insufficient permissions')) {
+            setError('Database Permission Denied. Please check your Firestore Security Rules in Firebase Console.');
+        } else if (msg.includes('API key')) {
             setError('Configuration Error: Invalid API Key.');
         } else {
-            // Show the actual error message to help debugging
             setError(msg || 'Connection error. Please try again.');
         }
         setLoading(false);
@@ -91,7 +90,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 {error && (
                     <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm flex items-center gap-2 border border-red-100 break-words">
                         <span className="shrink-0">{ICONS.Alert}</span>
-                        <span>{error}</span>
+                        <span className="leading-tight">{error}</span>
                     </div>
                 )}
                 
