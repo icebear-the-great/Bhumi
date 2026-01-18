@@ -9,25 +9,25 @@ import { getAuth } from "firebase/auth";
 const MANUAL_CREDENTIALS = {
   // 1. Cut your API Key in half. 
   // Example: "AIzaSyD-123456" -> part1: "AIzaSyD", part2: "-123456"
-  apiKeyPart1: "AIzaSyCnza0fLPbV7AT", 
-  apiKeyPart2: "qUTgl7ryG5nvyp42TZ0I", 
+  apiKeyPart1: "", 
+  apiKeyPart2: "", 
 
   // 2. Fill in the rest normally
-  authDomain: "bhumi-hub.firebaseapp.com",
-  projectId: "bhumi-hub",
-  storageBucket: "bhumi-hub.firebasestorage.app",
-  messagingSenderId: "988563223727",
-  appId: "1:988563223727:web:6d9454c68da2951dcf905a"
+  authDomain: "",
+  projectId: "",
+  storageBucket: "",
+  messagingSenderId: "",
+  appId: ""
 };
 
-// Construct the final config
+// Construct the final config - We add .trim() to ensure no accidental whitespace from copy-pasting
 const hardcodedConfig = {
-  apiKey: MANUAL_CREDENTIALS.apiKeyPart1 + MANUAL_CREDENTIALS.apiKeyPart2,
-  authDomain: MANUAL_CREDENTIALS.authDomain,
-  projectId: MANUAL_CREDENTIALS.projectId,
-  storageBucket: MANUAL_CREDENTIALS.storageBucket,
-  messagingSenderId: MANUAL_CREDENTIALS.messagingSenderId,
-  appId: MANUAL_CREDENTIALS.appId
+  apiKey: (MANUAL_CREDENTIALS.apiKeyPart1 + MANUAL_CREDENTIALS.apiKeyPart2).trim(),
+  authDomain: (MANUAL_CREDENTIALS.authDomain || "").trim(),
+  projectId: (MANUAL_CREDENTIALS.projectId || "").trim(),
+  storageBucket: (MANUAL_CREDENTIALS.storageBucket || "").trim(),
+  messagingSenderId: (MANUAL_CREDENTIALS.messagingSenderId || "").trim(),
+  appId: (MANUAL_CREDENTIALS.appId || "").trim()
 };
 
 // --- ENVIRONMENT VARIABLES (Optional Fallback) ---
