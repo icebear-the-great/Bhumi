@@ -9,15 +9,15 @@ import { getAuth } from "firebase/auth";
 const MANUAL_CREDENTIALS = {
   // 1. Cut your API Key in half. 
   // Example: "AIzaSyD-123456" -> part1: "AIzaSyD", part2: "-123456"
-  apiKeyPart1: "AIzaSyCnza0fLPbV7AT", 
-  apiKeyPart2: "qUTgl7ryG5nvyp42TZ0I", 
+  apiKeyPart1: "", 
+  apiKeyPart2: "", 
 
   // 2. Fill in the rest normally
-  authDomain: "bhumi-hub.firebaseapp.com",
-  projectId: "bhumi-hub",
-  storageBucket: "bhumi-hub.firebasestorage.app",
-  messagingSenderId: "988563223727",
-  appId: "1:988563223727:web:6d9454c68da2951dcf905a"
+  authDomain: "",
+  projectId: "",
+  storageBucket: "",
+  messagingSenderId: "",
+  appId: ""
 };
 
 // Construct the final config - We add .trim() to ensure no accidental whitespace from copy-pasting
@@ -68,4 +68,4 @@ try {
 }
 
 export const getIsDemoMode = () => isDemoMode;
-export { firestore, auth };
+export { firestore, auth, firebaseConfig };
