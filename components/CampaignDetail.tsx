@@ -12,6 +12,44 @@ interface CampaignDetailProps {
   channels: string[];
 }
 
+// Utility to resize and convert image to Base64
+const convertFileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            if (!file.type.startsWith('image')) {
+                // Non-images (PDF, etc) - just return base64
+                resolve(event.target?.result as string);
+                return;
+            }
+            
+            // For images, resize to prevent Firestore size limits
+            const img = new Image();
+            img.src = event.target?.result as string;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 800;
+                let width = img.width;
+                let height = img.height;
+                
+                if (width > MAX_WIDTH) {
+                    height *= MAX_WIDTH / width;
+                    width = MAX_WIDTH;
+                }
+                
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx?.drawImage(img, 0, 0, width, height);
+                resolve(canvas.toDataURL('image/jpeg', 0.8)); // Compress quality 0.8
+            };
+            img.onerror = (err) => reject(err);
+        };
+        reader.onerror = (err) => reject(err);
+    });
+};
+
 const CampaignDetail: React.FC<CampaignDetailProps> = ({ 
   campaign, 
   onBack, 
@@ -85,20 +123,26 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
     }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      const newAsset: CampaignAsset = {
-        id: Math.random().toString(36).substr(2, 9),
-        name: file.name,
-        type: file.type.startsWith('image') ? 'image' : file.type.startsWith('video') ? 'video' : 'file',
-        url: URL.createObjectURL(file) // Create local URL for preview
-      };
-      
-      onUpdate({
-        ...campaign,
-        assets: [...campaign.assets, newAsset]
-      });
+      try {
+          const base64Url = await convertFileToBase64(file);
+          const newAsset: CampaignAsset = {
+            id: Math.random().toString(36).substr(2, 9),
+            name: file.name,
+            type: file.type.startsWith('image') ? 'image' : file.type.startsWith('video') ? 'video' : 'file',
+            url: base64Url
+          };
+          
+          onUpdate({
+            ...campaign,
+            assets: [...campaign.assets, newAsset]
+          });
+      } catch (err) {
+          console.error("Failed to process file", err);
+          alert("Failed to upload image. Please try a smaller file.");
+      }
     }
   };
 
@@ -134,14 +178,20 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
   };
 
   // --- Draft Logic ---
-  const handleDraftMediaUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDraftMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files && e.target.files[0]) {
           const file = e.target.files[0];
           setDraftMediaFile(file);
-          setNewDraft({
-              ...newDraft,
-              mediaUrl: URL.createObjectURL(file)
-          });
+          try {
+              const base64Url = await convertFileToBase64(file);
+              setNewDraft({
+                  ...newDraft,
+                  mediaUrl: base64Url
+              });
+          } catch (err) {
+              console.error(err);
+              alert("Failed to process image.");
+          }
       }
   };
 
