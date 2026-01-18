@@ -16,12 +16,15 @@ const getStoredConfig = () => {
 };
 
 let firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY,
-  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.FIREBASE_PROJECT_ID,
-  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.FIREBASE_APP_ID
+
+
+  apiKey: "AIzaSyCnza0fLPbV7ATqUTgl7ryG5nvyp42TZ0I",
+  authDomain: "bhumi-hub.firebaseapp.com",
+  projectId: "bhumi-hub",
+  storageBucket: "bhumi-hub.firebasestorage.app",
+  messagingSenderId: "988563223727",
+  appId: "1:988563223727:web:6d9454c68da2951dcf905a",
+  measurementId: "G-F6HVE312JW"
 };
 
 // Check if Env vars are effectively empty/undefined and try fallback
