@@ -14,7 +14,7 @@ import { Idea, Campaign, User, AppConfig } from './types';
 import { db } from './services/db';
 
 const App: React.FC = () => {
-  const [loading, setLoading] = useState(true); // Global loading state
+  const [loading, setLoading] = useState(true); // Initial session check
   const [user, setUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState('dashboard');
   
@@ -30,16 +30,28 @@ const App: React.FC = () => {
   const [modalCampaignId, setModalCampaignId] = useState<string | undefined>(undefined);
   const [editingIdea, setEditingIdea] = useState<Idea | null>(null);
 
-  // Initialize DB data on load
+  // 1. Initial Session Check on Mount
   useEffect(() => {
-    const initApp = async () => {
-        setLoading(true);
+    const checkSession = () => {
         try {
-            // Check session
             const sessionUser = db.getSession();
             if (sessionUser) setUser(sessionUser);
+        } catch (error) {
+            console.error("Session check failed", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+    checkSession();
+  }, []);
 
-            // Seed DB if new
+  // 2. Load Data ONLY when User exists
+  useEffect(() => {
+    if (!user) return;
+
+    const loadData = async () => {
+        try {
+            // Seed DB if new (safe to call here as user is authenticated)
             await db.init();
 
             // Fetch Data
@@ -55,22 +67,23 @@ const App: React.FC = () => {
             setIdeas(fetchedIdeas);
             setCampaigns(fetchedCampaigns);
         } catch (error) {
-            console.error("App initialization failed", error);
-        } finally {
-            setLoading(false);
+            console.error("Data load failed:", error);
         }
     };
 
-    initApp();
-  }, []);
+    loadData();
+  }, [user]);
 
   const handleLogin = (loggedInUser: User) => {
       setUser(loggedInUser);
+      // Data load useEffect will trigger automatically
   };
 
   const handleLogout = async () => {
       await db.logout();
       setUser(null);
+      setIdeas([]);
+      setCampaigns([]);
   };
 
   const handleUpdateConfig = async (newConfig: AppConfig) => {
@@ -116,12 +129,6 @@ const App: React.FC = () => {
     await db.updateIdea(updatedIdea);
   };
 
-  // Passed to Pipeline to handle deletes/status changes internally if needed, 
-  // but Pipeline currently calls setIdeas directly. We need to wrap setIdeas in Pipeline 
-  // OR handle it here. 
-  // *Correction*: IdeaPipeline takes setIdeas. To support persistence, we should probably 
-  // pass a specific handler, but for now let's just update the specific handlers passed down.
-
   const handleSaveIdea = (ideaData: Partial<Idea>) => {
     if (editingIdea) {
       handleUpdateIdea({ ...editingIdea, ...ideaData } as Idea);
@@ -134,7 +141,7 @@ const App: React.FC = () => {
 
   const handleSelectCampaign = (id: string) => {
     setSelectedCampaignId(id);
-    setActiveTab('campaigns'); // Ensure tab is correct
+    setActiveTab('campaigns'); 
   };
 
   const handleAddCampaign = async () => {
@@ -179,31 +186,22 @@ const App: React.FC = () => {
   }
 
   const renderContent = () => {
-    if (!user) return null; // GUARD: Ensures user is not null for TypeScript
+    if (!user) return null;
 
     switch (activeTab) {
       case 'dashboard':
         return <Dashboard ideas={ideas} campaigns={campaigns} />;
       case 'pipeline':
-        // Note: IdeaPipeline uses setIdeas directly for delete/status. 
-        // For full persistence, we'd need to intercept those. 
-        // For this demo, we'll rely on the main handlers for Modal edits.
-        // To fix deletion persistence in pipeline:
         const wrappedSetIdeas = (action: React.SetStateAction<Idea[]>) => {
             setIdeas(prev => {
                 const next = typeof action === 'function' ? action(prev) : action;
-                // Simple sync: if length changed (delete) or status changed, sync all
-                // This is heavy but ensures sync. Ideally we implement specific handlers.
-                // Since this is a specialized prompt, let's just let the UI update 
-                // and rely on specific handlers for robust changes.
-                // A better approach for the user:
                 return next;
             });
         };
 
         return <IdeaPipeline 
             ideas={ideas} 
-            setIdeas={wrappedSetIdeas} // Passing raw setter for now
+            setIdeas={wrappedSetIdeas}
             onAddIdea={() => handleOpenModal()} 
             onEditIdea={handleEditIdea} 
         />;
@@ -248,7 +246,6 @@ const App: React.FC = () => {
     }
   };
 
-  // Reset selected campaign when changing tabs manually (except when already on campaigns)
   const handleTabChange = (tab: string) => {
     if (tab !== 'campaigns') {
       setSelectedCampaignId(null);
@@ -260,7 +257,7 @@ const App: React.FC = () => {
       return (
           <div className="min-h-screen bg-sand-100 flex items-center justify-center flex-col gap-4">
               <div className="w-12 h-12 border-4 border-bhumi-200 border-t-bhumi-600 rounded-full animate-spin"></div>
-              <p className="text-bhumi-900 font-medium animate-pulse">Initializing BhumiHub Database...</p>
+              <p className="text-bhumi-900 font-medium animate-pulse">Loading BhumiHub...</p>
           </div>
       )
   }
