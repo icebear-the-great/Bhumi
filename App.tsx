@@ -315,6 +315,7 @@ const App: React.FC = () => {
                 onOpenIdeaModal={() => handleOpenModal(selectedCampaign.id)}
                 onUpdateIdea={handleUpdateIdea}
                 channels={config.channels}
+                currentUser={user}
               />
             );
           }
