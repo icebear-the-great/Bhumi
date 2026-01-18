@@ -13,12 +13,14 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   
   const isDemo = getIsDemoMode();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setShowHelp(false);
     setLoading(true);
 
     try {
@@ -32,7 +34,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     } catch (anyError: any) {
         console.error("Login Error:", anyError);
         
-        // Parse Firebase Error Codes
         const code = anyError?.code;
         const msg = anyError?.message || '';
 
@@ -40,10 +41,14 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             setError('Incorrect email or password.');
         } else if (code === 'auth/too-many-requests') {
             setError('Too many failed attempts. Please try again later.');
+        } else if (code === 'auth/operation-not-allowed') {
+            setError('Email/Password Sign-in is not enabled in Firebase Console.');
+            setShowHelp(true);
         } else if (code === 'auth/network-request-failed') {
             setError('Network error. Check your internet connection.');
         } else if (code === 'permission-denied' || msg.includes('Missing or insufficient permissions')) {
-            setError('Database Permission Denied. Please check your Firestore Security Rules in Firebase Console.');
+            setError('Database Permission Denied. Check Firestore Rules.');
+            setShowHelp(true);
         } else if (msg.includes('API key')) {
             setError('Configuration Error: Invalid API Key.');
         } else {
@@ -58,7 +63,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col border border-sand-200 animate-fade-in-up z-10">
         
         {/* Brand Header */}
-        <div className="bg-earth-300 p-8 text-center flex flex-col items-center justify-center border-b border-sand-300 relative">
+        <div className={`p-8 text-center flex flex-col items-center justify-center border-b border-sand-300 relative transition-colors ${isDemo ? 'bg-earth-300' : 'bg-bhumi-900'}`}>
             <img 
               src="/bhumi-logo.png" 
               alt="BhumiHub" 
@@ -68,29 +73,46 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                  e.currentTarget.nextElementSibling?.classList.remove('hidden');
               }}
             />
-            <div className="bg-bhumi-900 p-3 rounded-xl text-white mb-3 shadow-md hidden">
+            <div className="bg-bhumi-800 p-3 rounded-xl text-white mb-3 shadow-md hidden">
                 {ICONS.Brand}
             </div>
             
-            <h1 className="text-2xl font-bold text-bhumi-900 tracking-tight">BhumiHub</h1>
-            <p className="text-bhumi-800/80 text-sm font-medium mt-1">Marketing Operations Platform</p>
+            <h1 className={`text-2xl font-bold tracking-tight ${isDemo ? 'text-bhumi-900' : 'text-white'}`}>BhumiHub</h1>
+            <p className={`text-sm font-medium mt-1 ${isDemo ? 'text-bhumi-800/80' : 'text-white/70'}`}>Marketing Operations Platform</p>
             
-            {isDemo && (
-                <div className="absolute top-4 right-4 flex flex-col items-end animate-pulse">
-                    <span className="bg-orange-100 text-orange-700 text-[10px] font-bold px-2 py-1 rounded-full border border-orange-200 uppercase tracking-wide mb-1">
+            <div className="absolute top-4 right-4 flex flex-col items-end">
+                {isDemo ? (
+                    <span className="bg-orange-100 text-orange-700 text-[10px] font-bold px-2 py-1 rounded-full border border-orange-200 uppercase tracking-wide">
                         Demo Mode
                     </span>
-                </div>
-            )}
+                ) : (
+                    <span className="bg-green-500/20 text-green-100 text-[10px] font-bold px-2 py-1 rounded-full border border-green-500/30 uppercase tracking-wide flex items-center gap-1 backdrop-blur-sm">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
+                        Connected
+                    </span>
+                )}
+            </div>
         </div>
 
         {/* Login Form */}
         <div className="p-8">
             <form onSubmit={handleSubmit} className="space-y-5">
                 {error && (
-                    <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm flex items-center gap-2 border border-red-100 break-words">
-                        <span className="shrink-0">{ICONS.Alert}</span>
-                        <span className="leading-tight">{error}</span>
+                    <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm flex flex-col gap-1 border border-red-100 break-words">
+                        <div className="flex items-center gap-2 font-semibold">
+                            <span className="shrink-0">{ICONS.Alert}</span>
+                            <span>Login Failed</span>
+                        </div>
+                        <span className="text-red-800 leading-tight ml-6">{error}</span>
+                        {showHelp && (
+                            <div className="ml-6 mt-1 text-xs text-red-700 bg-red-100/50 p-2 rounded">
+                                <strong>Troubleshooting:</strong>
+                                <ul className="list-disc ml-4 mt-1 space-y-1">
+                                    <li>Ensure "Email/Password" provider is enabled in Firebase Console &gt; Authentication &gt; Sign-in method.</li>
+                                    <li>Check Firestore Rules allow reads.</li>
+                                </ul>
+                            </div>
+                        )}
                     </div>
                 )}
                 
@@ -138,10 +160,16 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             </form>
 
             <div className="mt-8 text-center">
-                {isDemo && (
+                {isDemo ? (
                      <p className="text-xs text-sand-400">
                         Running in Demo Mode (Data will not persist).<br/>
                         Default login: <strong className="text-sand-600">mike.k@bhumi.com / welcome123</strong>
+                    </p>
+                ) : (
+                    <p className="text-xs text-sand-400">
+                        Connected to Firebase.<br/>
+                        Please login with your <strong className="text-sand-600">Authentication credentials</strong>.<br/>
+                        (Ensure the user exists in the Authentication tab, not just Database)
                     </p>
                 )}
             </div>
