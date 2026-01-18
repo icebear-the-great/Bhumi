@@ -29,6 +29,14 @@ const App: React.FC = () => {
   const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
   const [modalCampaignId, setModalCampaignId] = useState<string | undefined>(undefined);
   const [editingIdea, setEditingIdea] = useState<Idea | null>(null);
+  
+  // Notification System
+  const [notification, setNotification] = useState<{message: string, type: 'success' | 'error'} | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+      setNotification({ message, type });
+      setTimeout(() => setNotification(null), 4000);
+  };
 
   // 1. Initial Session Check on Mount
   useEffect(() => {
@@ -68,6 +76,7 @@ const App: React.FC = () => {
             setCampaigns(fetchedCampaigns);
         } catch (error) {
             console.error("Data load failed:", error);
+            showToast("Failed to load data. Check connection.", 'error');
         }
     };
 
@@ -87,8 +96,15 @@ const App: React.FC = () => {
   };
 
   const handleUpdateConfig = async (newConfig: AppConfig) => {
+      const prevConfig = config;
       setConfig(newConfig);
-      await db.saveConfig(newConfig);
+      try {
+          await db.saveConfig(newConfig);
+          showToast("Settings updated");
+      } catch (error: any) {
+          setConfig(prevConfig);
+          handleError(error, "Failed to update settings");
+      }
   }
 
   const handleOpenModal = (campaignId?: string) => {
@@ -101,6 +117,15 @@ const App: React.FC = () => {
     setEditingIdea(idea);
     setModalCampaignId(undefined);
     setIsModalOpen(true);
+  };
+
+  const handleError = (error: any, defaultMsg: string) => {
+      console.error(error);
+      if (error?.code === 'permission-denied' || error?.message?.includes('Missing or insufficient permissions')) {
+          showToast("Permission Denied: Update Firestore Rules in Firebase Console.", 'error');
+      } else {
+          showToast(defaultMsg, 'error');
+      }
   };
 
   const handleAddIdea = async (newIdea: Partial<Idea>) => {
@@ -117,16 +142,30 @@ const App: React.FC = () => {
     };
     
     // Optimistic Update
+    const prevIdeas = [...ideas];
     setIdeas([idea, ...ideas]);
-    // Persist
-    await db.saveIdea(idea);
+
+    try {
+        await db.saveIdea(idea);
+        showToast("Idea created successfully");
+    } catch (error) {
+        setIdeas(prevIdeas); // Rollback
+        handleError(error, "Failed to create idea");
+    }
   };
 
   const handleUpdateIdea = async (updatedIdea: Idea) => {
     // Optimistic Update
+    const prevIdeas = [...ideas];
     setIdeas(prev => prev.map(i => i.id === updatedIdea.id ? updatedIdea : i));
-    // Persist
-    await db.updateIdea(updatedIdea);
+    
+    try {
+        await db.updateIdea(updatedIdea);
+        showToast("Idea updated");
+    } catch (error) {
+        setIdeas(prevIdeas); // Rollback
+        handleError(error, "Failed to update idea");
+    }
   };
 
   const handleSaveIdea = (ideaData: Partial<Idea>) => {
@@ -159,30 +198,61 @@ const App: React.FC = () => {
       contentDrafts: []
     };
     
+    const prevCampaigns = [...campaigns];
     setCampaigns([newCampaign, ...campaigns]);
     setSelectedCampaignId(newCampaign.id);
-    await db.saveCampaign(newCampaign);
+
+    try {
+        await db.saveCampaign(newCampaign);
+        showToast("New initiative created");
+    } catch (error) {
+        setCampaigns(prevCampaigns); // Rollback
+        setSelectedCampaignId(null);
+        handleError(error, "Failed to create initiative");
+    }
   };
 
   const handleUpdateCampaign = async (updatedCampaign: Campaign) => {
+    const prevCampaigns = [...campaigns];
     setCampaigns(prev => prev.map(c => c.id === updatedCampaign.id ? updatedCampaign : c));
-    await db.updateCampaign(updatedCampaign);
+    
+    try {
+        await db.updateCampaign(updatedCampaign);
+        // Note: We don't toast on every keystroke update from CampaignDetail
+    } catch (error) {
+        setCampaigns(prevCampaigns);
+        handleError(error, "Failed to save changes");
+    }
   };
 
   const handleAddUser = async (newUser: User) => {
-      const updated = await db.addUser(newUser);
-      setUsers(updated);
+      try {
+          const updated = await db.addUser(newUser);
+          setUsers(updated);
+          showToast("Team member added");
+      } catch (error) {
+          handleError(error, "Failed to add user");
+      }
   }
 
   const handleUpdateUserStatus = async (id: string, status: 'Active' | 'Inactive') => {
-      const updated = await db.updateUserStatus(id, status);
-      setUsers(updated);
+      try {
+          const updated = await db.updateUserStatus(id, status);
+          setUsers(updated);
+          showToast(`User ${status.toLowerCase()}`);
+      } catch (error) {
+          handleError(error, "Failed to update user status");
+      }
   }
 
   const handleResetPassword = async (id: string) => {
-      const updated = await db.resetUserPassword(id);
-      setUsers(updated);
-      alert("Password has been reset to 'welcome123'");
+      try {
+          const updated = await db.resetUserPassword(id);
+          setUsers(updated);
+          showToast("Password reset to 'welcome123'");
+      } catch (error) {
+          handleError(error, "Failed to reset password");
+      }
   }
 
   const renderContent = () => {
@@ -193,6 +263,11 @@ const App: React.FC = () => {
         return <Dashboard ideas={ideas} campaigns={campaigns} />;
       case 'pipeline':
         const wrappedSetIdeas = (action: React.SetStateAction<Idea[]>) => {
+            // We intercept setIdeas from Pipeline to ensure we handle persistence if needed,
+            // but Pipeline usually calls onEdit or Delete. 
+            // If Pipeline does direct state manipulation for deletes, we need to handle that.
+            // For now, Pipeline mostly uses onEdit/onAdd props.
+            // Ideally we refactor Pipeline to use onUpdateIdea / onDeleteIdea.
             setIdeas(prev => {
                 const next = typeof action === 'function' ? action(prev) : action;
                 return next;
@@ -272,6 +347,16 @@ const App: React.FC = () => {
         {renderContent()}
       </Layout>
       
+      {/* Global Notification Toast */}
+      {notification && (
+        <div className={`fixed bottom-6 right-6 px-6 py-4 rounded-xl shadow-2xl z-50 flex items-center gap-3 animate-fade-in-up border ${
+            notification.type === 'success' ? 'bg-bhumi-900 text-white border-bhumi-800' : 'bg-red-50 text-red-700 border-red-200'
+        }`}>
+            {notification.type === 'success' ? ICONS.Success : ICONS.Alert}
+            <span className="font-medium">{notification.message}</span>
+        </div>
+      )}
+
       <IdeaModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
