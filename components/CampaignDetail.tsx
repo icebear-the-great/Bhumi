@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Campaign, Idea, CampaignAsset, IdeaStatus, CampaignNote, ContentDraft, Comment } from '../types';
 import { ICONS } from '../constants';
 
@@ -29,6 +29,11 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
   const [linkSearch, setLinkSearch] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   
+  // Update local state if the campaign prop changes (e.g. ID swap after creation)
+  useEffect(() => {
+    setEditedCampaign(campaign);
+  }, [campaign]);
+
   // Draft State
   const [showDraftForm, setShowDraftForm] = useState(false);
   const [editingDraftId, setEditingDraftId] = useState<string | null>(null);
