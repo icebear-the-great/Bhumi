@@ -88,32 +88,38 @@ export const db = {
 
     try {
         const configRef = doc(firestore, COLLECTIONS.CONFIG, 'main');
-        const configSnap = await getDoc(configRef);
-        
-        if (!configSnap.exists()) {
-            console.log("Seeding Database...");
-            await setDoc(configRef, {
-                categories: DEFAULT_CATEGORIES,
-                roles: DEFAULT_ROLES,
-                channels: DEFAULT_CHANNELS
-            });
+        // We use try/catch here specifically for the read to handle permission errors gracefully on init
+        try {
+            const configSnap = await getDoc(configRef);
             
-            // Seed Users (Profiles only)
-            for (const user of MOCK_USERS) {
-                await setDoc(doc(firestore, COLLECTIONS.USERS, user.email), user);
-            }
+            if (!configSnap.exists()) {
+                console.log("Seeding Database...");
+                await setDoc(configRef, {
+                    categories: DEFAULT_CATEGORIES,
+                    roles: DEFAULT_ROLES,
+                    channels: DEFAULT_CHANNELS
+                });
+                
+                // Seed Users (Profiles only)
+                for (const user of MOCK_USERS) {
+                    await setDoc(doc(firestore, COLLECTIONS.USERS, user.email), user);
+                }
 
-            // Seed Ideas
-            for (const idea of MOCK_IDEAS) {
-                 const { id, ...rest } = idea;
-                 await setDoc(doc(firestore, COLLECTIONS.IDEAS, id), rest);
-            }
+                // Seed Ideas
+                for (const idea of MOCK_IDEAS) {
+                    const { id, ...rest } = idea;
+                    await setDoc(doc(firestore, COLLECTIONS.IDEAS, id), rest);
+                }
 
-            // Seed Campaigns
-             for (const camp of MOCK_CAMPAIGNS) {
-                 const { id, ...rest } = camp;
-                 await setDoc(doc(firestore, COLLECTIONS.CAMPAIGNS, id), rest);
+                // Seed Campaigns
+                for (const camp of MOCK_CAMPAIGNS) {
+                    const { id, ...rest } = camp;
+                    await setDoc(doc(firestore, COLLECTIONS.CAMPAIGNS, id), rest);
+                }
             }
+        } catch (readError: any) {
+            console.warn("DB Init: Could not read/seed database. This is expected if security rules block unauthenticated access.", readError.message);
+            // Do not re-throw, allow app to continue so user can log in
         }
     } catch (e) {
         console.error("Error initializing DB:", e);
@@ -128,7 +134,9 @@ export const db = {
         const snapshot = await getDocs(collection(firestore, COLLECTIONS.USERS));
         return snapshot.docs.map(d => ({ id: d.id, ...d.data() } as User));
     } catch (e) {
-        return getLocal(LS_KEYS.USERS, MOCK_USERS); 
+        // If permission denied, return empty or fallback to local mock prevents app crash
+        console.warn("getUsers failed:", e);
+        return []; 
     }
   },
 
@@ -155,8 +163,6 @@ export const db = {
   },
 
   resetUserPassword: async (id: string): Promise<User[]> => {
-    // In a real app, this would use Admin SDK or Cloud Function.
-    // For demo/local, we just log it.
     console.log("Password reset triggered for", id);
     return db.getUsers();
   },
@@ -171,7 +177,7 @@ export const db = {
             const data = convertTimestamps(d.data());
             return { id: d.id, ...data } as Idea;
         });
-    } catch (e) { return getLocal(LS_KEYS.IDEAS, MOCK_IDEAS); }
+    } catch (e) { return []; }
   },
 
   saveIdea: async (idea: Idea): Promise<Idea> => {
@@ -217,7 +223,7 @@ export const db = {
             const data = convertTimestamps(d.data());
             return { id: d.id, ...data } as Campaign;
         });
-      } catch (e) { return getLocal(LS_KEYS.CAMPAIGNS, MOCK_CAMPAIGNS); }
+      } catch (e) { return []; }
   },
 
   saveCampaign: async (campaign: Campaign): Promise<Campaign> => {
@@ -255,7 +261,7 @@ export const db = {
       }
       return { categories: DEFAULT_CATEGORIES, roles: DEFAULT_ROLES, channels: DEFAULT_CHANNELS };
     } catch {
-      return getLocal(LS_KEYS.CONFIG, { categories: DEFAULT_CATEGORIES, roles: DEFAULT_ROLES, channels: DEFAULT_CHANNELS });
+      return { categories: DEFAULT_CATEGORIES, roles: DEFAULT_ROLES, channels: DEFAULT_CHANNELS };
     }
   },
 
@@ -270,12 +276,9 @@ export const db = {
   // --- AUTH ---
   login: async (email: string, password: string): Promise<User | null> => {
     if (!auth || !firestore) {
-        // Local Mode Login
+        // Local Mode Login logic remains same
         const localUsers = getLocal<User[]>(LS_KEYS.USERS, MOCK_USERS);
         const user = localUsers.find(u => u.email === email);
-        
-        // Simple mock password check (in real app, hash check needed)
-        // For this demo, we accept 'welcome123' or the user's stored password if we added one (though User type doesn't stricly enforce password field security here)
         if (user && (password === 'welcome123' || user.password === password)) {
              localStorage.setItem('bhumi_session', JSON.stringify(user));
              return user;
@@ -286,28 +289,35 @@ export const db = {
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const firebaseUser = userCredential.user;
-        const docRef = doc(firestore, COLLECTIONS.USERS, email); 
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-            const userData = docSnap.data() as User;
-            if (userData.status === 'Inactive') return null;
-            const fullUser = { ...userData, id: firebaseUser.uid };
-            localStorage.setItem('bhumi_session', JSON.stringify(fullUser));
-            return fullUser;
-        } else {
-             // First time login sync if auth exists but firestore doc doesn't? 
-             // Ideally we shouldn't reach here in this specific app logic unless auto-registration,
-             // but let's return a basic user.
-             const newUser: User = {
-                 id: firebaseUser.uid,
-                 email: firebaseUser.email || '',
-                 name: firebaseUser.displayName || 'User',
-                 role: 'Contributor',
-                 status: 'Active'
-             };
-             return newUser;
+        
+        let userData: User | null = null;
+        
+        // Try to fetch user profile, BUT allow failure if permissions are denied
+        try {
+            const docRef = doc(firestore, COLLECTIONS.USERS, email); 
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                userData = docSnap.data() as User;
+            }
+        } catch (readError) {
+            console.warn("Login: Firestore profile read failed. Likely permission issue. Fallback to Auth data.", readError);
+            // We ignore this error to allow the user to log in based on Auth success
         }
+
+        if (userData && userData.status === 'Inactive') return null;
+        
+        // Construct user object (either from DB or from Auth)
+        const fullUser = userData ? { ...userData, id: firebaseUser.uid } : {
+             id: firebaseUser.uid,
+             email: firebaseUser.email || '',
+             name: firebaseUser.displayName || email.split('@')[0],
+             role: 'Contributor', // Default Role
+             status: 'Active' as const
+        };
+        
+        localStorage.setItem('bhumi_session', JSON.stringify(fullUser));
+        return fullUser;
+
     } catch (e) {
         console.error("Login failed:", e);
         throw e;
