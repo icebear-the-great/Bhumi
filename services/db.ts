@@ -1,6 +1,6 @@
 import { User, AppConfig, Idea, Campaign } from '../types';
 import { MOCK_USERS, MOCK_IDEAS, MOCK_CAMPAIGNS, DEFAULT_CATEGORIES, DEFAULT_ROLES, DEFAULT_CHANNELS } from '../constants';
-import { firestore, auth } from './firebaseConfig';
+import { firestore, auth, getIsDemoMode } from './firebaseConfig';
 import { 
   collection, 
   getDocs, 
@@ -74,6 +74,9 @@ const setLocal = (key: string, data: any) => {
 };
 
 export const db = {
+  get isDemo() {
+      return !firestore;
+  },
   
   // --- INITIALIZATION ---
   init: async () => {
