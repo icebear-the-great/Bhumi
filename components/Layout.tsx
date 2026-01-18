@@ -1,6 +1,7 @@
 import React from 'react';
 import { ICONS } from '../constants';
 import { User } from '../types';
+import { db } from '../services/db';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -11,6 +12,8 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, user, onLogout }) => {
+  const isDemo = db.isDemo;
+  
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: ICONS.Dashboard },
     { id: 'pipeline', label: 'Idea Pipeline', icon: ICONS.Pipeline },
@@ -28,17 +31,25 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, user
     <div className="flex h-screen bg-sand-100 text-sand-900 font-sans overflow-hidden">
       {/* Sidebar - Updated background to earth-300 (#d2c9bf) */}
       <aside className="w-64 bg-earth-300 text-bhumi-900 flex flex-col shadow-xl z-20 border-r border-sand-300">
-        <div className="p-6 flex items-center gap-3 border-b border-sand-400/30">
-          <img 
-            src="/bhumi-logo.png" 
-            alt="BhumiHub" 
-            className="h-12 w-auto object-contain"
-            onError={(e) => {
-              // Fallback if image fails to load
-              e.currentTarget.style.display = 'none';
-            }} 
-          />
-          <span className="font-bold text-2xl tracking-tight text-bhumi-900">BhumiHub</span>
+        <div className="p-6 flex flex-col gap-1 border-b border-sand-400/30">
+          <div className="flex items-center gap-3">
+              <img 
+                src="/bhumi-logo.png" 
+                alt="BhumiHub" 
+                className="h-12 w-auto object-contain"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }} 
+              />
+              <span className="font-bold text-2xl tracking-tight text-bhumi-900">BhumiHub</span>
+          </div>
+          {/* Connection Badge */}
+          <div className="flex items-center gap-2 mt-2 px-1">
+             <span className={`w-2 h-2 rounded-full ${isDemo ? 'bg-orange-500' : 'bg-green-500 animate-pulse'}`}></span>
+             <span className="text-[10px] uppercase font-bold text-bhumi-800 tracking-wider">
+                 {isDemo ? 'Demo Mode' : 'Connected'}
+             </span>
+          </div>
         </div>
         
         <nav className="flex-1 p-4 space-y-2">
