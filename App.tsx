@@ -32,6 +32,7 @@ const App: React.FC = () => {
   
   // Notification System
   const [notification, setNotification] = useState<{message: string, type: 'success' | 'error'} | null>(null);
+  const [hasPermissionError, setHasPermissionError] = useState(false);
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
       setNotification({ message, type });
@@ -85,7 +86,6 @@ const App: React.FC = () => {
 
   const handleLogin = (loggedInUser: User) => {
       setUser(loggedInUser);
-      // Data load useEffect will trigger automatically
   };
 
   const handleLogout = async () => {
@@ -93,6 +93,7 @@ const App: React.FC = () => {
       setUser(null);
       setIdeas([]);
       setCampaigns([]);
+      setHasPermissionError(false);
   };
 
   const handleUpdateConfig = async (newConfig: AppConfig) => {
@@ -121,8 +122,12 @@ const App: React.FC = () => {
 
   const handleError = (error: any, defaultMsg: string) => {
       console.error(error);
-      if (error?.code === 'permission-denied' || error?.message?.includes('Missing or insufficient permissions')) {
-          showToast("Permission Denied: Update Firestore Rules in Firebase Console.", 'error');
+      const msg = error?.message || '';
+      const code = error?.code || '';
+      
+      if (code === 'permission-denied' || msg.includes('Missing or insufficient permissions')) {
+          setHasPermissionError(true);
+          showToast("Permission Denied: Unable to save to database.", 'error');
       } else {
           showToast(defaultMsg, 'error');
       }
@@ -218,7 +223,6 @@ const App: React.FC = () => {
     
     try {
         await db.updateCampaign(updatedCampaign);
-        // Note: We don't toast on every keystroke update from CampaignDetail
     } catch (error) {
         setCampaigns(prevCampaigns);
         handleError(error, "Failed to save changes");
@@ -263,11 +267,6 @@ const App: React.FC = () => {
         return <Dashboard ideas={ideas} campaigns={campaigns} />;
       case 'pipeline':
         const wrappedSetIdeas = (action: React.SetStateAction<Idea[]>) => {
-            // We intercept setIdeas from Pipeline to ensure we handle persistence if needed,
-            // but Pipeline usually calls onEdit or Delete. 
-            // If Pipeline does direct state manipulation for deletes, we need to handle that.
-            // For now, Pipeline mostly uses onEdit/onAdd props.
-            // Ideally we refactor Pipeline to use onUpdateIdea / onDeleteIdea.
             setIdeas(prev => {
                 const next = typeof action === 'function' ? action(prev) : action;
                 return next;
@@ -344,6 +343,52 @@ const App: React.FC = () => {
   return (
     <>
       <Layout activeTab={activeTab} setActiveTab={handleTabChange} user={user} onLogout={handleLogout}>
+        
+        {/* Permission Error Banner */}
+        {hasPermissionError && (
+            <div className="bg-red-50 border-b border-red-200 p-4 animate-fade-in-down">
+                <div className="max-w-4xl mx-auto flex items-start gap-4">
+                    <div className="bg-red-100 text-red-600 p-2 rounded-full shrink-0 mt-1">
+                        {ICONS.Lock}
+                    </div>
+                    <div className="flex-1">
+                        <h3 className="font-bold text-red-800 text-sm">Database Write Permission Denied</h3>
+                        <p className="text-red-700 text-xs mt-1 mb-3">
+                            Your Firestore security rules are blocking the application from saving data. 
+                            Please copy the rules below and paste them into <strong>Firebase Console &gt; Firestore Database &gt; Rules</strong>.
+                        </p>
+                        <div className="bg-white border border-red-200 rounded-lg p-3 relative group">
+                            <pre className="text-[10px] text-stone-600 font-mono overflow-x-auto whitespace-pre">
+{`rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}`}
+                            </pre>
+                            <button 
+                                onClick={() => {
+                                    navigator.clipboard.writeText(`rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read, write: if request.auth != null;\n    }\n  }\n}`);
+                                    showToast("Rules copied to clipboard");
+                                }}
+                                className="absolute top-2 right-2 bg-red-50 hover:bg-red-100 text-red-600 text-xs px-2 py-1 rounded border border-red-100 transition-colors font-bold"
+                            >
+                                Copy Rules
+                            </button>
+                        </div>
+                    </div>
+                    <button 
+                        onClick={() => setHasPermissionError(false)}
+                        className="text-red-400 hover:text-red-600"
+                    >
+                        {ICONS.Close}
+                    </button>
+                </div>
+            </div>
+        )}
+
         {renderContent()}
       </Layout>
       
