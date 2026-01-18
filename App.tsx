@@ -134,9 +134,10 @@ const App: React.FC = () => {
   };
 
   const handleAddIdea = async (newIdea: Partial<Idea>) => {
+    const tempId = Math.random().toString(36).substr(2, 9);
     const idea: Idea = {
       ...newIdea as Idea,
-      id: Math.random().toString(36).substr(2, 9),
+      id: tempId,
       createdAt: new Date(),
       comments: [],
       tags: newIdea.tags || [],
@@ -151,7 +152,9 @@ const App: React.FC = () => {
     setIdeas([idea, ...ideas]);
 
     try {
-        await db.saveIdea(idea);
+        const savedIdea = await db.saveIdea(idea);
+        // Swap temp ID with real DB ID
+        setIdeas(prev => prev.map(i => i.id === tempId ? savedIdea : i));
         showToast("Idea created successfully");
     } catch (error) {
         setIdeas(prevIdeas); // Rollback
@@ -189,8 +192,9 @@ const App: React.FC = () => {
   };
 
   const handleAddCampaign = async () => {
+    const tempId = Math.random().toString(36).substr(2, 9);
     const newCampaign: Campaign = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: tempId,
       name: 'New Initiative',
       description: 'Describe your new initiative here...',
       startDate: new Date().toISOString().split('T')[0],
@@ -205,10 +209,17 @@ const App: React.FC = () => {
     
     const prevCampaigns = [...campaigns];
     setCampaigns([newCampaign, ...campaigns]);
-    setSelectedCampaignId(newCampaign.id);
+    setSelectedCampaignId(tempId);
 
     try {
-        await db.saveCampaign(newCampaign);
+        const savedCampaign = await db.saveCampaign(newCampaign);
+        
+        // Swap temp ID with real DB ID in list
+        setCampaigns(prev => prev.map(c => c.id === tempId ? savedCampaign : c));
+        
+        // Update selection if user is still viewing it
+        setSelectedCampaignId(curr => curr === tempId ? savedCampaign.id : curr);
+        
         showToast("New initiative created");
     } catch (error) {
         setCampaigns(prevCampaigns); // Rollback
