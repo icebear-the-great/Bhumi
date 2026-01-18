@@ -28,6 +28,13 @@ const LS_KEYS = {
     CONFIG: 'bhumi_data_config'
 };
 
+// Helper to remove undefined fields which Firestore hates
+const sanitize = (obj: any): any => {
+    return JSON.parse(JSON.stringify(obj, (key, value) => {
+        return value === undefined ? null : value;
+    }));
+};
+
 // Helper to convert Firestore Timestamps to Dates
 const convertTimestamps = (data: any): any => {
   if (data === null || data === undefined) return data;
@@ -111,13 +118,13 @@ export const db = {
                 // Seed Ideas
                 for (const idea of MOCK_IDEAS) {
                     const { id, ...rest } = idea;
-                    await setDoc(doc(firestore, COLLECTIONS.IDEAS, id), rest);
+                    await setDoc(doc(firestore, COLLECTIONS.IDEAS, id), sanitize(rest));
                 }
 
                 // Seed Campaigns
                 for (const camp of MOCK_CAMPAIGNS) {
                     const { id, ...rest } = camp;
-                    await setDoc(doc(firestore, COLLECTIONS.CAMPAIGNS, id), rest);
+                    await setDoc(doc(firestore, COLLECTIONS.CAMPAIGNS, id), sanitize(rest));
                 }
             }
         } catch (readError: any) {
@@ -150,7 +157,7 @@ export const db = {
         setLocal(LS_KEYS.USERS, updated);
         return updated;
     }
-    await setDoc(doc(firestore, COLLECTIONS.USERS, user.email), user);
+    await setDoc(doc(firestore, COLLECTIONS.USERS, user.email), sanitize(user));
     return db.getUsers();
   },
 
@@ -191,7 +198,9 @@ export const db = {
         return idea;
     }
     const { id, ...rest } = idea;
-    const docRef = await addDoc(collection(firestore, COLLECTIONS.IDEAS), rest);
+    // Sanitize to remove undefined
+    const cleanData = sanitize(rest);
+    const docRef = await addDoc(collection(firestore, COLLECTIONS.IDEAS), cleanData);
     return { ...idea, id: docRef.id };
   },
 
@@ -203,7 +212,7 @@ export const db = {
           return idea;
       }
       const { id, ...rest } = idea;
-      await updateDoc(doc(firestore, COLLECTIONS.IDEAS, id), rest);
+      await updateDoc(doc(firestore, COLLECTIONS.IDEAS, id), sanitize(rest));
       return idea;
   },
 
@@ -237,7 +246,7 @@ export const db = {
           return campaign;
       }
       const { id, ...rest } = campaign;
-      const docRef = await addDoc(collection(firestore, COLLECTIONS.CAMPAIGNS), rest);
+      const docRef = await addDoc(collection(firestore, COLLECTIONS.CAMPAIGNS), sanitize(rest));
       return { ...campaign, id: docRef.id };
   },
 
@@ -249,7 +258,7 @@ export const db = {
           return campaign;
       }
       const { id, ...rest } = campaign;
-      await updateDoc(doc(firestore, COLLECTIONS.CAMPAIGNS, id), rest);
+      await updateDoc(doc(firestore, COLLECTIONS.CAMPAIGNS, id), sanitize(rest));
       return campaign;
   },
 
@@ -273,7 +282,7 @@ export const db = {
         setLocal(LS_KEYS.CONFIG, config);
         return;
     }
-    await setDoc(doc(firestore, COLLECTIONS.CONFIG, 'main'), config);
+    await setDoc(doc(firestore, COLLECTIONS.CONFIG, 'main'), sanitize(config));
   },
 
   // --- AUTH ---
