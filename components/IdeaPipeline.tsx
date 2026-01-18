@@ -4,12 +4,15 @@ import { ICONS } from '../constants';
 
 interface IdeaPipelineProps {
   ideas: Idea[];
-  setIdeas: React.Dispatch<React.SetStateAction<Idea[]>>;
+  // setIdeas is optional now as we use onUpdateIdea, but keeping it for compatibility if needed elsewhere
+  setIdeas?: React.Dispatch<React.SetStateAction<Idea[]>>;
   onAddIdea: () => void;
   onEditIdea: (idea: Idea) => void;
+  onUpdateIdea: (idea: Idea) => void;
+  onDeleteIdea: (id: string) => void;
 }
 
-const IdeaPipeline: React.FC<IdeaPipelineProps> = ({ ideas, setIdeas, onAddIdea, onEditIdea }) => {
+const IdeaPipeline: React.FC<IdeaPipelineProps> = ({ ideas, onAddIdea, onEditIdea, onUpdateIdea, onDeleteIdea }) => {
   const [filter, setFilter] = useState('');
   const [selectedTag, setSelectedTag] = useState('');
   const [showArchived, setShowArchived] = useState(false);
@@ -47,14 +50,12 @@ const IdeaPipeline: React.FC<IdeaPipelineProps> = ({ ideas, setIdeas, onAddIdea,
 
   const handleDelete = (id: string) => {
       if(window.confirm("Are you sure you want to permanently delete this idea?")) {
-        setIdeas(prev => prev.filter(i => i.id !== id));
+        onDeleteIdea(id);
       }
   };
 
-  const handleStatusChange = (id: string, newStatus: IdeaStatus) => {
-    setIdeas(prev => prev.map(idea => 
-      idea.id === id ? { ...idea, status: newStatus } : idea
-    ));
+  const handleStatusChange = (idea: Idea, newStatus: IdeaStatus) => {
+    onUpdateIdea({ ...idea, status: newStatus });
   };
 
   const getPriorityColor = (p: Priority) => {
@@ -110,7 +111,7 @@ const IdeaPipeline: React.FC<IdeaPipelineProps> = ({ ideas, setIdeas, onAddIdea,
                 className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm font-medium ${
                     showArchived 
                     ? 'bg-stone-200 text-stone-700 shadow-inner' 
-                    : 'text-sand-500 hover:text-bhumi-900 hover:bg-sand-100'
+                    : 'text-sand-500 hover:text-bhumi-900 hover:text-bhumi-900 hover:bg-sand-100'
                 }`}
                 title={showArchived ? "Show Active Pipeline" : "Show Archived/Cancelled Ideas"}
             >
@@ -227,7 +228,7 @@ const IdeaPipeline: React.FC<IdeaPipelineProps> = ({ ideas, setIdeas, onAddIdea,
                          {/* Archive Button */}
                          {idea.status !== IdeaStatus.CANCELLED && (
                             <button 
-                                onClick={(e) => { e.stopPropagation(); handleStatusChange(idea.id, IdeaStatus.CANCELLED); }} 
+                                onClick={(e) => { e.stopPropagation(); handleStatusChange(idea, IdeaStatus.CANCELLED); }} 
                                 className="hover:text-stone-600 text-sand-300"
                                 title="Archive / Cancel Idea"
                             >
@@ -247,7 +248,7 @@ const IdeaPipeline: React.FC<IdeaPipelineProps> = ({ ideas, setIdeas, onAddIdea,
                           return (
                               <button
                                   key={s}
-                                  onClick={(e) => { e.stopPropagation(); handleStatusChange(idea.id, s); }}
+                                  onClick={(e) => { e.stopPropagation(); handleStatusChange(idea, s); }}
                                   className={`flex-1 py-1 rounded text-[9px] font-bold uppercase transition-all ${getStatusColor(s, isActive)}`}
                                   title={`Move to ${s}`}
                               >
