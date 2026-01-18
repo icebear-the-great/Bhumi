@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Campaign, Idea, CampaignAsset, IdeaStatus, CampaignNote, ContentDraft, Comment } from '../types';
+import { Campaign, Idea, CampaignAsset, IdeaStatus, CampaignNote, ContentDraft, Comment, User } from '../types';
 import { ICONS } from '../constants';
 
 interface CampaignDetailProps {
@@ -10,6 +10,7 @@ interface CampaignDetailProps {
   onOpenIdeaModal: () => void;
   onUpdateIdea: (idea: Idea) => void;
   channels: string[];
+  currentUser: User;
 }
 
 // Utility to resize and convert image to Base64
@@ -57,7 +58,8 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
   ideas,
   onOpenIdeaModal,
   onUpdateIdea,
-  channels
+  channels,
+  currentUser
 }) => {
   const [activeSection, setActiveSection] = useState<'overview' | 'content' | 'pipeline' | 'assets'>('overview');
   const [isEditing, setIsEditing] = useState(false);
@@ -161,7 +163,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
       id: Math.random().toString(36).substr(2, 9),
       text: newNote,
       createdAt: new Date(),
-      author: 'Mike K.' // Mock current user
+      author: currentUser.name
     };
     
     // Update both local edit state and persist changes immediately for notes
@@ -239,7 +241,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
               caption: newDraft.caption || '',
               mediaUrl: newDraft.mediaUrl,
               status: 'Draft',
-              author: 'Mike K.',
+              author: currentUser.name,
               lastUpdated: new Date(),
               feedback: []
           };
@@ -276,7 +278,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
                       ...d.feedback,
                       {
                           id: Math.random().toString(36).substr(2, 9),
-                          author: 'Mike K.',
+                          author: currentUser.name,
                           text: text,
                           timestamp: new Date()
                       }
