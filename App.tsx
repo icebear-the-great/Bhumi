@@ -12,7 +12,7 @@ import Login from './components/Login';
 import { ICONS } from './constants';
 import { Idea, Campaign, User, AppConfig } from './types';
 import { db } from './services/db';
-import bhumiLogo from './bhumi-logo.png';
+ 
 const App: React.FC = () => {
   const [loading, setLoading] = useState(true); // Initial session check
   const [user, setUser] = useState<User | null>(null);
