@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ICONS } from '../constants';
 import { db } from '../services/db';
 import { User } from '../types';
-import { getIsDemoMode, toggleDemoMode, getIsForcedDemoMode } from '../services/firebaseConfig';
+import { getIsDemoMode, toggleDemoMode, getIsForcedDemoMode, firebaseConfig } from '../services/firebaseConfig';
 
 interface LoginProps {
     onLogin: (user: User) => void;
@@ -78,9 +78,15 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
                     <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
                         {isDemo ? (
-                            <span className="bg-orange-100 text-orange-700 text-[10px] font-bold px-2 py-1 rounded-full border border-orange-200 uppercase tracking-wide">
-                                Demo Mode
-                            </span>
+                            !getIsForcedDemoMode() ? (
+                                <span className="bg-red-100 text-red-700 text-[10px] font-bold px-2 py-1 rounded-full border border-red-200 uppercase tracking-wide flex items-center gap-1">
+                                    {ICONS.Alert} No Config
+                                </span>
+                            ) : (
+                                <span className="bg-orange-100 text-orange-700 text-[10px] font-bold px-2 py-1 rounded-full border border-orange-200 uppercase tracking-wide">
+                                    Demo Mode
+                                </span>
+                            )
                         ) : (
                             <span className="bg-green-500/20 text-green-100 text-[10px] font-bold px-2 py-1 rounded-full border border-green-500/30 uppercase tracking-wide flex items-center gap-1 backdrop-blur-sm">
                                 <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
@@ -179,6 +185,26 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                                 Connected to Firebase.<br />
                                 Please login with your <strong className="text-sand-600">Authentication credentials</strong>.
                             </p>
+                        )}
+
+                        {/* Connection Debug Info (Only when trying to connect but failing) */}
+                        {isDemo && !getIsForcedDemoMode() && (
+                            <div className="mt-4 p-2 bg-red-50 rounded border border-red-100 text-[10px] text-red-800 text-left font-mono">
+                                <p className="font-bold mb-1">Missing Configuration:</p>
+                                <div className="grid grid-cols-2 gap-x-2">
+                                    {Object.entries(firebaseConfig).map(([key, val]) => (
+                                        <div key={key} className="flex justify-between">
+                                            <span>{key}:</span>
+                                            <span className={val && val !== "undefined" ? "text-green-600 font-bold" : "text-red-600 font-bold"}>
+                                                {val && val !== "undefined" ? "OK" : "MISSING"}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                                <p className="mt-2 text-[9px] text-red-600 leading-tight">
+                                    Check Netlify Site Settings &gt; Environment Variables. Ensure keys start with <code>VITE_FIREBASE_...</code>
+                                </p>
+                            </div>
                         )}
                     </div>
                 </div>

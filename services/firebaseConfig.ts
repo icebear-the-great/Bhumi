@@ -66,7 +66,11 @@ try {
     isDemoMode = false;
     console.log("BhumiHub: Connected to Firebase");
   } else {
-    console.warn("BhumiHub: No valid Firebase config found (Keys missing or undefined). Running in Demo Mode.");
+    console.warn("BhumiHub: No valid Firebase config found. Running in Demo Mode.");
+    const missingKeys = Object.entries(firebaseConfig)
+      .filter(([_, value]) => !isValid(value))
+      .map(([key]) => key);
+    console.error("Missing/Invalid Configuration Keys:", missingKeys.join(', '));
   }
 } catch (e) {
   console.error("BhumiHub: Firebase initialization failed.", e);
