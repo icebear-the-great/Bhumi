@@ -33,7 +33,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, user
       <aside className="w-64 bg-earth-300 text-bhumi-900 flex flex-col shadow-xl z-20 border-r border-sand-300">
         <div className="p-6 flex flex-col gap-1 border-b border-sand-400/30">
           <div className="flex items-center gap-3">
-              <span className="font-bold text-2xl tracking-tight text-bhumi-900">BhumiHub</span>
+              <span className="font-bold text-2xl tracking-tight text-bhumi-900">BhūmiHub</span>
           </div>
           {/* Connection Badge */}
           <div className="flex items-center gap-2 mt-2 px-1">
