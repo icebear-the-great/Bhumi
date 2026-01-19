@@ -1,12 +1,13 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Idea, IdeaStatus, Priority, MarketResearchResult, SearchSource } from "../types";
 
-// Initialize the Gemini API client.
-// The API key must be obtained exclusively from process.env.API_KEY.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Initialize the Gemini API client safely.
+// We lazily access the client or check for the key to prevent top-level crashes if the key is missing.
+const apiKey = process.env.API_KEY;
+const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
 export const generateMarketingIdeas = async (context: string): Promise<Partial<Idea>[]> => {
-  if (!process.env.API_KEY) {
+  if (!ai) {
     console.warn("No API Key available for Gemini");
     return [];
   }
@@ -64,7 +65,7 @@ export const generateMarketingIdeas = async (context: string): Promise<Partial<I
 };
 
 export const refineIdeaContent = async (text: string): Promise<string> => {
-  if (!process.env.API_KEY) return text;
+  if (!ai) return text;
 
   try {
     const model = 'gemini-3-flash-preview';
@@ -88,7 +89,7 @@ export const refineIdeaContent = async (text: string): Promise<string> => {
 };
 
 export const analyzeSentiment = async (feedback: string): Promise<string> => {
-    if (!process.env.API_KEY) return "N/A";
+    if (!ai) return "N/A";
     
     try {
         const model = 'gemini-3-flash-preview';
@@ -104,10 +105,10 @@ export const analyzeSentiment = async (feedback: string): Promise<string> => {
 }
 
 export const performMarketResearch = async (query: string): Promise<MarketResearchResult | null> => {
-  if (!process.env.API_KEY) {
+  if (!ai) {
     console.warn("No API Key");
     return {
-        content: "API Key is missing. Please add your Gemini API Key to the .env file to enable Market Intelligence.",
+        content: "API Key is missing. Please add your Gemini API Key to the .env file (or Netlify Environment Variables) to enable Market Intelligence.",
         sources: [],
         timestamp: new Date(),
         query
