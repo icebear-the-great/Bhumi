@@ -68,14 +68,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               src="/bhumi-logo.png" 
               alt="BhumiHub" 
               className="h-24 w-auto mb-4 object-contain"
-              onError={(e) => {
-                 e.currentTarget.style.display = 'none';
-                 e.currentTarget.nextElementSibling?.classList.remove('hidden');
-              }}
             />
-            <div className="bg-bhumi-800 p-3 rounded-xl text-white mb-3 shadow-md hidden">
-                {ICONS.Brand}
-            </div>
             
             <h1 className={`text-2xl font-bold tracking-tight ${isDemo ? 'text-bhumi-900' : 'text-white'}`}>BhumiHub</h1>
             <p className={`text-sm font-medium mt-1 ${isDemo ? 'text-bhumi-800/80' : 'text-white/70'}`}>Marketing Operations Platform</p>
@@ -168,8 +161,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 ) : (
                     <p className="text-xs text-sand-400">
                         Connected to Firebase.<br/>
-                        Please login with your <strong className="text-sand-600">Authentication credentials</strong>.<br/>
-                        (Ensure the user exists in the Authentication tab, not just Database)
+                        Please login with your <strong className="text-sand-600">Authentication credentials</strong>.
                     </p>
                 )}
             </div>
