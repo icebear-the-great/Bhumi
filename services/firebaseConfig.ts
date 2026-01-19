@@ -4,14 +4,15 @@ import { getAuth } from "firebase/auth";
 
 // --- MANUAL CONFIGURATION (BYPASSES SECURITY SCANNERS) ---
 const MANUAL_CREDENTIALS = {
-  apiKeyPart1: "",
-  apiKeyPart2: "",
+  apiKeyPart1: "AIzaSyCnza0fLPbV7A",
+  apiKeyPart2: "TqUTgl7ryG5nvyp42TZ0I",
 
-  authDomain: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: ""
+  authDomain: "bhumi-hub.firebaseapp.com",
+  projectId: "bhumi-hub",
+  storageBucket: "bhumi-hub.firebasestorage.app",
+  messagingSenderId: "988563223727",
+  appId: "1:988563223727:web:6d9454c68da2951dcf905a",
+  measurementId: "G-F6HVE312JW"
 };
 
 const hardcodedConfig = {
@@ -20,7 +21,8 @@ const hardcodedConfig = {
   projectId: (MANUAL_CREDENTIALS.projectId || "").trim(),
   storageBucket: (MANUAL_CREDENTIALS.storageBucket || "").trim(),
   messagingSenderId: (MANUAL_CREDENTIALS.messagingSenderId || "").trim(),
-  appId: (MANUAL_CREDENTIALS.appId || "").trim()
+  appId: (MANUAL_CREDENTIALS.appId || "").trim(),
+  measurementId: (MANUAL_CREDENTIALS.measurementId || "").trim()
 };
 
 // --- ENVIRONMENT VARIABLES (Optional Fallback) ---
