@@ -152,7 +152,7 @@ export const MOCK_IDEAS: Idea[] = [
   {
     id: '1',
     title: 'Earth Day Yoga Challenge',
-    description: 'A 7-day social media challenge encouraging users to practice yoga outdoors. Use hashtag #BhumiEarthFlow.',
+    description: 'A 7-day social media challenge encouraging users to practice yoga outdoors. Use hashtag #BhūmiEarthFlow.',
     status: IdeaStatus.IN_PROGRESS,
     priority: Priority.HIGH,
     tags: ['Social Media', 'Community', 'Q2'],
@@ -230,7 +230,7 @@ export const MOCK_CAMPAIGNS: Campaign[] = [
       {
         id: 'd1',
         platform: 'Instagram',
-        caption: 'Embrace the chill. ❄️ Our Winter Solstice collection is here to keep you warm and grounded. \n\nShop the sale link in bio. \n\n#BhumiWinter #SustainableStyle',
+        caption: 'Embrace the chill. ❄️ Our Winter Solstice collection is here to keep you warm and grounded. \n\nShop the sale link in bio. \n\n#BhūmiWinter #SustainableStyle',
         mediaUrl: '',
         status: 'In Review',
         author: 'Sarah M.',
