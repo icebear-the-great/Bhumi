@@ -34,7 +34,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, user
         <div className="p-6 flex flex-col gap-1 border-b border-sand-400/30">
           <div className="flex items-center gap-3">
               <img 
-                src="/bhumi-logo.png" 
+                src="/bhumi-logo.png"
                 alt="BhumiHub" 
                 className="h-12 w-auto object-contain"
                 onError={(e) => {
