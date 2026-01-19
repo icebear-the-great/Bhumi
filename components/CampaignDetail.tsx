@@ -651,7 +651,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
                                             B
                                         </div>
                                         <div className="flex flex-col justify-center">
-                                            <span className="text-xs font-bold text-bhumi-900">bhumi_lifestyle</span>
+                                            <span className="text-xs font-bold text-bhumi-900">bhūmi_lifestyle</span>
                                         </div>
                                     </div>
                                     
