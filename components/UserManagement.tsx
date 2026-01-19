@@ -52,7 +52,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ currentUser, users, onA
       <div className="flex justify-between items-center mb-6">
         <div>
             <h2 className="text-lg font-bold text-bhumi-900">Team Members</h2>
-            <p className="text-sand-500 text-sm">Manage access and roles for the BhumiHub platform.</p>
+            <p className="text-sand-500 text-sm">Manage access and roles for the BhūmiHub platform.</p>
         </div>
         <button 
           onClick={() => setShowAddModal(true)}
