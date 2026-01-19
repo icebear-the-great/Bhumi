@@ -64,14 +64,8 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         
         {/* Brand Header */}
         <div className={`p-8 text-center flex flex-col items-center justify-center border-b border-sand-300 relative transition-colors ${isDemo ? 'bg-earth-300' : 'bg-bhumi-900'}`}>
-            <img 
-              src="/bhumi-logo.png" 
-              alt="BhumiHub" 
-              className="h-24 w-auto mb-4 object-contain"
-            />
-            
-            <h1 className={`text-2xl font-bold tracking-tight ${isDemo ? 'text-bhumi-900' : 'text-white'}`}>BhumiHub</h1>
-            <p className={`text-sm font-medium mt-1 ${isDemo ? 'text-bhumi-800/80' : 'text-white/70'}`}>Marketing Operations Platform</p>
+            <h1 className={`text-3xl font-bold tracking-tight mb-1 ${isDemo ? 'text-bhumi-900' : 'text-white'}`}>BhumiHub</h1>
+            <p className={`text-sm font-medium ${isDemo ? 'text-bhumi-800/80' : 'text-white/70'}`}>MarketOps</p>
             
             <div className="absolute top-4 right-4 flex flex-col items-end">
                 {isDemo ? (
