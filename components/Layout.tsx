@@ -2,7 +2,6 @@ import React from 'react';
 import { ICONS } from '../constants';
 import { User } from '../types';
 import { db } from '../services/db';
-import bhumiLogo from '../bhumi-logo.png';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -35,7 +34,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, user
         <div className="p-6 flex flex-col gap-1 border-b border-sand-400/30">
           <div className="flex items-center gap-3">
               <img 
-                src={bhumiLogo}
+                src="/bhumi-logo.png"
                 alt="BhumiHub" 
                 className="h-12 w-auto object-contain"
                 onError={(e) => {
