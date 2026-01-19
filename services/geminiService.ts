@@ -1,11 +1,9 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Idea, IdeaStatus, Priority, MarketResearchResult, SearchSource } from "../types";
 
-// Initialize the Gemini API client safely.
-// If API_KEY is missing, we pass a dummy string to prevent crash on initialization.
-// Actual API calls are guarded by checks inside the functions.
-const apiKey = process.env.API_KEY || "missing-key";
-const ai = new GoogleGenAI({ apiKey });
+// Initialize the Gemini API client.
+// The API key must be obtained exclusively from process.env.API_KEY.
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const generateMarketingIdeas = async (context: string): Promise<Partial<Idea>[]> => {
   if (!process.env.API_KEY) {
@@ -16,7 +14,7 @@ export const generateMarketingIdeas = async (context: string): Promise<Partial<I
   try {
     const model = 'gemini-3-flash-preview';
     const prompt = `
-      You are a creative marketing strategist for Bhumi Lifestyle, a sustainable activewear and lifestyle brand. 
+      You are a creative marketing strategist for Bhūmi Lifestyle, a sustainable activewear and lifestyle brand. 
       Generate 3 distinct, innovative marketing campaign ideas based on the following context: "${context}".
       
       For each idea, provide a catchy title, a short compelling description, and suggested tags.
