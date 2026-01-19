@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ICONS } from '../constants';
 import { db } from '../services/db';
 import { User } from '../types';
@@ -58,13 +58,21 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         }
     };
 
+    useEffect(() => {
+        // Ensure DB/Local Storage is seeded/migrated before user tries to login
+        const initDB = async () => {
+            await db.init();
+        };
+        initDB();
+    }, []);
+
     return (
         <div className="min-h-screen bg-sand-100 flex items-center justify-center p-4 relative">
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col border border-sand-200 animate-fade-in-up z-10">
 
                 {/* Brand Header */}
                 <div className={`p-8 text-center flex flex-col items-center justify-center border-b border-sand-300 relative transition-colors ${isDemo ? 'bg-earth-300' : 'bg-bhumi-900'}`}>
-                    <img src="../assets/bhumi-logo.png" alt="BhumiHub Logo" className="w-[48px] h-[48px] mb-2 object-contain" />
+                    <img src="/bhumi-logo.png" alt="BhumiHub Logo" className="w-[48px] h-[48px] mb-2 object-contain" />
                     <h1 className={`text-3xl font-bold tracking-tight mb-0 ${isDemo ? 'text-bhumi-900' : 'text-white'}`}>BhūmiHub</h1>
                     <p className={`text-[10px] uppercase tracking-widest font-semibold opacity-80 ${isDemo ? 'text-bhumi-800' : 'text-white'}`}>MarketOps</p>
 
