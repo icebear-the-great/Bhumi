@@ -598,7 +598,9 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
                                     </div>
                                     {newDraft.mediaUrl && (
                                         <div className="mt-2 w-24 h-24 rounded-lg overflow-hidden border border-sand-200">
-                                            <img src="/bhumi-logo.png" alt="Preview" className="w-full h-full object-cover" />
+                                            <div className="w-full h-full bg-sand-200 flex items-center justify-center text-sand-400">
+                                                {ICONS.Image}
+                                            </div>
                                         </div>
                                     )}
                                 </div>
@@ -645,8 +647,8 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
                                 <div className="p-4 flex-1">
                                     {/* Phone Header Mock */}
                                     <div className="flex items-center gap-2 mb-3">
-                                        <div className="w-8 h-8 rounded-full bg-sand-50 flex items-center justify-center border border-sand-200">
-                                            <img src="/bhumi-logo.png" alt="Profile" className="w-5 h-5 object-contain opacity-80" />
+                                        <div className="w-8 h-8 rounded-full bg-sand-200 flex items-center justify-center text-sand-500 font-bold text-xs">
+                                            B
                                         </div>
                                         <div className="flex flex-col justify-center">
                                             <span className="text-xs font-bold text-bhumi-900">bhumi_lifestyle</span>
