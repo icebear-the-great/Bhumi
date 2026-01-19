@@ -30,10 +30,19 @@ const Dashboard: React.FC<DashboardProps> = ({ ideas, campaigns }) => {
   const COLORS = ['#9cbfa5', '#729f7f', '#528260', '#df7654', '#b09e7d'];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
+      {/* Branding Header for Dashboard */}
+      <div className="flex items-center gap-4 mb-2 pb-6 border-b border-sand-200">
+         <img src="/bhumi-logo.png" alt="BhumiHub" className="h-14 w-auto object-contain" />
+         <div>
+            <h2 className="text-2xl font-bold text-bhumi-900">Marketing Overview</h2>
+            <p className="text-sand-500">Performance metrics and pipeline status.</p>
+         </div>
+      </div>
+
       {/* Top Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-sand-200 flex items-start justify-between">
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-sand-200 flex items-start justify-between transition-transform hover:-translate-y-1 duration-300">
           <div>
             <p className="text-sand-500 text-sm font-medium mb-1">Total Ideas</p>
             <h3 className="text-3xl font-bold text-bhumi-900">{ideas.length}</h3>
@@ -46,7 +55,7 @@ const Dashboard: React.FC<DashboardProps> = ({ ideas, campaigns }) => {
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-sand-200 flex items-start justify-between">
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-sand-200 flex items-start justify-between transition-transform hover:-translate-y-1 duration-300">
           <div>
             <p className="text-sand-500 text-sm font-medium mb-1">Active Initiatives</p>
             <h3 className="text-3xl font-bold text-bhumi-900">{activeCampaigns.length}</h3>
