@@ -89,16 +89,22 @@ export const db = {
 
     // --- INITIALIZATION ---
     init: async () => {
-        if (!firestore) {
-            // Initialize Local Storage with Mock Data if empty OR if stale (missing Jason K)
-            const storedUsers = getLocal<User[]>(LS_KEYS.USERS, []);
-            const isStale = !storedUsers.find(u => u.email === 'jason.k@bhumi.com');
+        const DATA_VERSION = 'v2'; // Bump this to force a data wipe/reset
 
-            if (!localStorage.getItem(LS_KEYS.USERS) || isStale) {
-                console.log("BhumiHub: Migrating/Seeding Mock Users...");
-                setLocal(LS_KEYS.USERS, MOCK_USERS);
+        if (!firestore) {
+            // Check for version match to force cleanup of old data
+            const currentVersion = localStorage.getItem('bhumi_data_version');
+            if (currentVersion !== DATA_VERSION) {
+                console.log("BhumiHub: Data Version mismatch. Wiping and Re-seeding...");
+                localStorage.removeItem(LS_KEYS.USERS);
+                localStorage.removeItem(LS_KEYS.IDEAS);
+                localStorage.removeItem(LS_KEYS.CAMPAIGNS);
+                localStorage.removeItem(LS_KEYS.CONFIG);
+                localStorage.setItem('bhumi_data_version', DATA_VERSION);
             }
 
+            // Initialize Local Storage with Mock Data if empty
+            if (!localStorage.getItem(LS_KEYS.USERS)) setLocal(LS_KEYS.USERS, MOCK_USERS);
             if (!localStorage.getItem(LS_KEYS.IDEAS)) setLocal(LS_KEYS.IDEAS, MOCK_IDEAS);
             if (!localStorage.getItem(LS_KEYS.CAMPAIGNS)) setLocal(LS_KEYS.CAMPAIGNS, MOCK_CAMPAIGNS);
             if (!localStorage.getItem(LS_KEYS.CONFIG)) setLocal(LS_KEYS.CONFIG, { categories: DEFAULT_CATEGORIES, roles: DEFAULT_ROLES, channels: DEFAULT_CHANNELS });

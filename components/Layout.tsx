@@ -22,8 +22,8 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, user
     { id: 'users', label: 'Team', icon: ICONS.Users },
   ];
 
-  // Only show Admin Settings for Marketing Lead (or equivalent admin role)
-  if (user.role === 'Marketing Lead') {
+  // Only show Admin Settings for Admin role
+  if (user.role === 'Admin') {
     navItems.push({ id: 'admin', label: 'Admin Settings', icon: ICONS.Settings });
   }
 

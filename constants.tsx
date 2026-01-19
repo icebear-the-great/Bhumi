@@ -89,6 +89,7 @@ export const DEFAULT_CATEGORIES = [
 ];
 
 export const DEFAULT_ROLES = [
+  'Admin',
   'Marketing Lead',
   'Content Strategist',
   'Product Manager',
@@ -111,6 +112,15 @@ export const DEFAULT_CHANNELS = [
 
 export const MOCK_USERS: User[] = [
   {
+    id: 'u0',
+    name: 'Admin User',
+    email: 'admin@bhumi.com',
+    role: 'Admin',
+    status: 'Active',
+    avatarUrl: '',
+    password: 'admin123'
+  },
+  {
     id: 'u1',
     name: 'Jason K.',
     email: 'jason.k@bhumi.com',
@@ -127,42 +137,10 @@ export const MOCK_USERS: User[] = [
     status: 'Active',
     avatarUrl: '',
     password: 'welcome123'
-  },
-  {
-    id: 'u3',
-    name: 'Jessica L.',
-    email: 'jess.l@bhumi.com',
-    role: 'Product Manager',
-    status: 'Active',
-    avatarUrl: '',
-    password: 'welcome123'
-  },
-  {
-    id: 'u4',
-    name: 'Tom R.',
-    email: 'tom.r@bhumi.com',
-    role: 'Community Manager',
-    status: 'Inactive',
-    avatarUrl: '',
-    password: 'welcome123'
   }
 ];
 
 export const MOCK_IDEAS: Idea[] = [
-  {
-    id: '1',
-    title: 'New Package Promo',
-    description: 'New package promo, to attact more new members.',
-    status: IdeaStatus.NEW,
-    priority: Priority.HIGH,
-    tags: ['Promo', 'Membership'],
-    category: 'Company Wide',
-    author: 'Jason K.',
-    createdAt: new Date(),
-    comments: [],
-    campaignId: '201',
-    type: 'Idea'
-  },
   {
     id: '2',
     title: 'CNY Deco in the Mall',
@@ -177,20 +155,6 @@ export const MOCK_IDEAS: Idea[] = [
     type: 'Task'
   },
   {
-    id: '3',
-    title: 'CNY Promotion',
-    description: 'Special offers and discounts for the Chinese New Year period.',
-    status: IdeaStatus.VALIDATED,
-    priority: Priority.HIGH,
-    tags: ['Promo', 'CNY'],
-    category: 'Company Wide',
-    author: 'Jessica L.',
-    createdAt: new Date(),
-    comments: [],
-    campaignId: '201',
-    type: 'Idea'
-  },
-  {
     id: '4',
     title: 'Create XHS Account',
     description: 'Process to create the official Xiao Hong Shu account.',
@@ -203,33 +167,6 @@ export const MOCK_IDEAS: Idea[] = [
     comments: [],
     campaignId: '201',
     type: 'Task'
-  },
-  {
-    id: '5',
-    title: 'Verify XHS Account',
-    description: 'Submit documentation to get the XHS account verified.',
-    status: IdeaStatus.NEW,
-    priority: Priority.HIGH,
-    tags: ['Social Media', 'XHS'],
-    category: 'Company Wide',
-    author: 'Tom R.',
-    createdAt: new Date(),
-    comments: [],
-    campaignId: '201',
-    type: 'Task'
-  },
-  {
-    id: '6',
-    title: 'Influencer Outreach Strategy',
-    description: 'Plan for reaching out to lifestyle influencers.',
-    status: IdeaStatus.NEW,
-    priority: Priority.MEDIUM,
-    tags: ['Marketing', 'Influencer'],
-    category: 'Company Wide',
-    author: 'Jason K.',
-    createdAt: new Date(),
-    comments: [],
-    type: 'Idea' // Intentionally unlinked for testing
   }
 ];
 

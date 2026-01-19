@@ -71,10 +71,10 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col border border-sand-200 animate-fade-in-up z-10">
 
                 {/* Brand Header */}
-                <div className={`p-8 text-center flex flex-col items-center justify-center border-b border-sand-300 relative transition-colors ${isDemo ? 'bg-earth-300' : 'bg-bhumi-900'}`}>
+                <div className={`p-8 text-center flex flex-col items-center justify-center border-b border-sand-300 relative transition-colors bg-earth-300`}>
                     <img src="/bhumi-logo.png" alt="BhumiHub Logo" className="w-[48px] h-[48px] mb-2 object-contain" />
-                    <h1 className={`text-3xl font-bold tracking-tight mb-0 ${isDemo ? 'text-bhumi-900' : 'text-white'}`}>BhūmiHub</h1>
-                    <p className={`text-[10px] uppercase tracking-widest font-semibold opacity-80 ${isDemo ? 'text-bhumi-800' : 'text-white'}`}>MarketOps</p>
+                    <h1 className="text-3xl font-bold tracking-tight mb-0 text-bhumi-900">BhūmiHub</h1>
+                    <p className="text-[10px] uppercase tracking-widest font-semibold opacity-80 text-bhumi-800">MarketOps</p>
 
                     <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
                         {isDemo ? (
@@ -88,8 +88,8 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                                 </span>
                             )
                         ) : (
-                            <span className="bg-green-500/20 text-green-100 text-[10px] font-bold px-2 py-1 rounded-full border border-green-500/30 uppercase tracking-wide flex items-center gap-1 backdrop-blur-sm">
-                                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
+                            <span className="bg-bhumi-900/10 text-bhumi-900 text-[10px] font-bold px-2 py-1 rounded-full border border-bhumi-900/20 uppercase tracking-wide flex items-center gap-1 backdrop-blur-sm">
+                                <span className="w-1.5 h-1.5 rounded-full bg-bhumi-600 animate-pulse"></span>
                                 Connected
                             </span>
                         )}
