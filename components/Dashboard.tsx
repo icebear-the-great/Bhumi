@@ -34,8 +34,7 @@ const Dashboard: React.FC<DashboardProps> = ({ ideas, campaigns }) => {
       {/* Branding Header for Dashboard */}
       <div className="flex items-center gap-4 mb-2 pb-6 border-b border-sand-200">
          <div>
-            <h2 className="text-2xl font-bold text-bhumi-900">Marketing Overview</h2>
-            <p className="text-sand-500">Performance metrics and pipeline status.</p>
+            <h2 className="text-2xl font-bold text-bhumi-900">Ops Dashboard</h2>
          </div>
       </div>
 
