@@ -50,8 +50,8 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, user
               key={item.id}
               onClick={() => setActiveTab(item.id)}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${activeTab === item.id
-                  ? 'bg-bhumi-900 text-white shadow-md'
-                  : 'text-bhumi-900/70 hover:bg-white/40 hover:text-bhumi-900'
+                ? 'bg-bhumi-900 text-white shadow-md'
+                : 'text-bhumi-900/70 hover:bg-white/40 hover:text-bhumi-900'
                 }`}
             >
               {item.icon}
@@ -87,7 +87,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, user
             {navItems.find(n => n.id === activeTab)?.label}
           </h1>
           <div className="flex items-center">
-            <img src="../assets/bhumi-logo.png" alt="BhumiHub" className="h-10 object-contain" />
+            <img src="/bhumi-logo.png" alt="BhumiHub" className="h-10 object-contain" />
           </div>
         </header>
 
