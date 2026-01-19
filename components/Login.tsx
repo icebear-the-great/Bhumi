@@ -64,7 +64,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         
         {/* Brand Header */}
         <div className={`p-8 text-center flex flex-col items-center justify-center border-b border-sand-300 relative transition-colors ${isDemo ? 'bg-earth-300' : 'bg-bhumi-900'}`}>
-            <h1 className={`text-3xl font-bold tracking-tight mb-1 ${isDemo ? 'text-bhumi-900' : 'text-white'}`}>BhumiHub</h1>
+            <h1 className={`text-3xl font-bold tracking-tight mb-1 ${isDemo ? 'text-bhumi-900' : 'text-white'}`}>BhūmiHub</h1>
             <p className={`text-sm font-medium ${isDemo ? 'text-bhumi-800/80' : 'text-white/70'}`}>MarketOps</p>
             
             <div className="absolute top-4 right-4 flex flex-col items-end">
