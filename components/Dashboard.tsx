@@ -33,7 +33,6 @@ const Dashboard: React.FC<DashboardProps> = ({ ideas, campaigns }) => {
     <div className="space-y-6 animate-fade-in">
       {/* Branding Header for Dashboard */}
       <div className="flex items-center gap-4 mb-2 pb-6 border-b border-sand-200">
-         <img src="/bhumi-logo.png" alt="BhumiHub" className="h-14 w-auto object-contain" />
          <div>
             <h2 className="text-2xl font-bold text-bhumi-900">Marketing Overview</h2>
             <p className="text-sand-500">Performance metrics and pipeline status.</p>
