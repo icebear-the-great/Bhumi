@@ -645,8 +645,8 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
                                 <div className="p-4 flex-1">
                                     {/* Phone Header Mock */}
                                     <div className="flex items-center gap-2 mb-3">
-                                        <div className="w-8 h-8 rounded-full bg-sand-200 flex items-center justify-center">
-                                            {ICONS.Brand}
+                                        <div className="w-8 h-8 rounded-full bg-sand-50 flex items-center justify-center border border-sand-200">
+                                            <img src="/bhumi-logo.png" alt="Profile" className="w-5 h-5 object-contain opacity-80" />
                                         </div>
                                         <div className="flex flex-col justify-center">
                                             <span className="text-xs font-bold text-bhumi-900">bhumi_lifestyle</span>
@@ -748,105 +748,6 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
                     </div>
                 )}
             </div>
-        )}
-
-        {/* PIPELINE TAB */}
-        {activeSection === 'pipeline' && (
-             <div className="space-y-4">
-                <div className="flex justify-between items-center bg-sand-50 p-4 rounded-xl border border-sand-200">
-                    <div>
-                        <h3 className="font-bold text-bhumi-900">Linked Ideas</h3>
-                        <p className="text-sand-500 text-sm">Manage the creative pipeline specific to this initiative.</p>
-                    </div>
-                    <div className="flex gap-2">
-                        <button 
-                            onClick={() => setShowLinker(!showLinker)} 
-                            className={`px-4 py-2 rounded-lg text-sm flex items-center gap-2 border transition-colors ${
-                                showLinker 
-                                ? 'bg-sand-200 border-sand-300 text-sand-800' 
-                                : 'bg-white border-sand-300 text-sand-600 hover:bg-sand-50'
-                            }`}
-                        >
-                            {ICONS.Link} {showLinker ? 'Cancel Linking' : 'Link Existing'}
-                        </button>
-                        <button onClick={onOpenIdeaModal} className="bg-bhumi-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-bhumi-700 flex items-center gap-2">
-                            {ICONS.Add} New Idea
-                        </button>
-                    </div>
-                </div>
-
-                {/* Linker UI */}
-                {showLinker && (
-                    <div className="bg-white p-4 rounded-xl border-2 border-bhumi-100 shadow-sm animate-fade-in-down">
-                        <div className="relative mb-3">
-                            <span className="absolute left-3 top-2.5 text-sand-400">{ICONS.Search}</span>
-                            <input 
-                                autoFocus
-                                type="text" 
-                                placeholder="Search unlinked ideas..." 
-                                className="w-full pl-10 pr-4 py-2 border border-sand-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-bhumi-500 text-sm"
-                                value={linkSearch}
-                                onChange={e => setLinkSearch(e.target.value)}
-                            />
-                        </div>
-                        <div className="max-h-60 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
-                            {unlinkedIdeas.length > 0 ? (
-                                unlinkedIdeas.map(idea => (
-                                    <div key={idea.id} className="flex justify-between items-center p-3 hover:bg-sand-50 rounded-lg border border-transparent hover:border-sand-200 group transition-all cursor-pointer" onClick={() => handleLinkIdea(idea)}>
-                                        <div>
-                                            <h4 className="font-bold text-sm text-bhumi-900">{idea.title}</h4>
-                                            <span className="text-xs text-sand-500">{idea.status} • {idea.author}</span>
-                                        </div>
-                                        <button className="text-bhumi-600 opacity-0 group-hover:opacity-100 font-medium text-xs bg-bhumi-50 px-3 py-1.5 rounded-full hover:bg-bhumi-100 transition-all">
-                                            Link
-                                        </button>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="text-center py-4 text-sand-400 text-sm">
-                                    {linkSearch ? 'No matching unlinked ideas found' : 'No unlinked ideas available'}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                {linkedIdeas.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {linkedIdeas.map(idea => (
-                            <div key={idea.id} className="bg-white p-4 rounded-xl border border-sand-200 shadow-sm hover:border-bhumi-400 transition-colors relative group">
-                                <div className="flex justify-between items-start mb-2">
-                                    <span className="text-xs font-bold text-bhumi-600 bg-bhumi-50 px-2 py-0.5 rounded-full">{idea.status}</span>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xs text-sand-400">{new Date(idea.createdAt).toLocaleDateString()}</span>
-                                        <button 
-                                            onClick={(e) => handleUnlinkIdea(e, idea)}
-                                            className="text-sand-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1"
-                                            title="Unlink idea"
-                                        >
-                                            {ICONS.Unlink}
-                                        </button>
-                                    </div>
-                                </div>
-                                <h4 className="font-bold text-stone-800 mb-1">{idea.title}</h4>
-                                <p className="text-sm text-sand-600 line-clamp-2">{idea.description}</p>
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    !showLinker && (
-                        <div className="text-center py-12 bg-white rounded-xl border border-dashed border-sand-300">
-                            <div className="text-sand-300 mb-2">{ICONS.Pipeline}</div>
-                            <p className="text-sand-500">No ideas linked to this initiative yet.</p>
-                            <div className="mt-2 space-x-2">
-                                <button onClick={onOpenIdeaModal} className="text-bhumi-600 font-medium text-sm hover:underline">Create new</button>
-                                <span className="text-sand-300">or</span>
-                                <button onClick={() => setShowLinker(true)} className="text-bhumi-600 font-medium text-sm hover:underline">Link existing</button>
-                            </div>
-                        </div>
-                    )
-                )}
-             </div>
         )}
 
         {/* ASSETS TAB */}
