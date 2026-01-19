@@ -3,6 +3,7 @@ import { ICONS } from '../constants';
 import { db } from '../services/db';
 import { User } from '../types';
 import { getIsDemoMode } from '../services/firebaseConfig';
+import bhumiLogo from '../bhumi-logo.png';
 
 interface LoginProps {
   onLogin: (user: User) => void;
@@ -65,7 +66,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         {/* Brand Header */}
         <div className={`p-8 text-center flex flex-col items-center justify-center border-b border-sand-300 relative transition-colors ${isDemo ? 'bg-earth-300' : 'bg-bhumi-900'}`}>
             <img 
-              src="/bhumi-logo.png" 
+              src={bhumiLogo} 
               alt="BhumiHub" 
               className="h-24 w-auto mb-4 object-contain"
             />
