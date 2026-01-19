@@ -594,8 +594,8 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
                                     <div key={idea.id} className="bg-white p-4 rounded-xl border border-sand-200 shadow-sm flex items-center justify-between group">
                                         <div>
                                             <div className="flex items-center gap-2 mb-1">
-                                                <div className={`w-2 h-2 rounded-full ${idea.status === 'validated' ? 'bg-green-500' :
-                                                    idea.status === 'in_progress' ? 'bg-blue-500' : 'bg-sand-300'
+                                                <div className={`w-2 h-2 rounded-full ${idea.status === IdeaStatus.VALIDATED ? 'bg-green-500' :
+                                                    idea.status === IdeaStatus.IN_PROGRESS ? 'bg-blue-500' : 'bg-sand-300'
                                                     }`}></div>
                                                 <h4 className="font-bold text-bhumi-900">{idea.title}</h4>
                                             </div>
@@ -625,7 +625,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
                                 <div className="text-center py-12 bg-white rounded-xl border border-dashed border-sand-300">
                                     <div className="text-sand-300 mb-2">{ICONS.Link}</div>
                                     <p className="text-sand-500 mb-4">No ideas linked to this initiative yet.</p>
-                                    <button onClick={() => setLinkSearch('') || setShowLinker(true)} className="text-bhumi-600 font-medium text-sm hover:underline">
+                                    <button onClick={() => { setLinkSearch(''); setShowLinker(true); }} className="text-bhumi-600 font-medium text-sm hover:underline">
                                         Link an existing idea
                                     </button>
                                 </div>
