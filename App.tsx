@@ -12,7 +12,7 @@ import Login from './components/Login';
 import { ICONS } from './constants';
 import { Idea, Campaign, User, AppConfig } from './types';
 import { db } from './services/db';
- 
+
 const App: React.FC = () => {
   const [loading, setLoading] = useState(true); // Initial session check
   const [user, setUser] = useState<User | null>(null);
@@ -129,7 +129,8 @@ const App: React.FC = () => {
           setHasPermissionError(true);
           showToast("Permission Denied: Unable to save to database.", 'error');
       } else {
-          showToast(defaultMsg, 'error');
+          // Show the actual error message if available, otherwise default
+          showToast(msg || defaultMsg, 'error');
       }
   };
 
@@ -355,7 +356,7 @@ const App: React.FC = () => {
       return (
           <div className="min-h-screen bg-sand-100 flex items-center justify-center flex-col gap-4">
               <div className="w-12 h-12 border-4 border-bhumi-200 border-t-bhumi-600 rounded-full animate-spin"></div>
-              <p className="text-bhumi-900 font-medium animate-pulse">Loading BhumiHub...</p>
+              <p className="text-bhumi-900 font-medium animate-pulse">Loading BhūmiHub...</p>
           </div>
       )
   }
